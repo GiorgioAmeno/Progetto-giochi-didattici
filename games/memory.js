@@ -17,7 +17,7 @@ if(!token){location.replace("../index.html");return;}
  */
 const operatori = [
   {
-    simbolo:"||", definizione:"OR logico: almeno una condizione è vera",
+    simbolo:"||", definizione:"OR logico",
     domande:[
       {testo:"Con || il risultato è vero se almeno una delle due condizioni è vera.", risposta:true},
       {testo:"Con || entrambe le condizioni devono essere vere per ottenere true.", risposta:false},
@@ -25,7 +25,7 @@ const operatori = [
     ]
   },
   {
-    simbolo:"&&", definizione:"AND logico: entrambe le condizioni sono vere",
+    simbolo:"&&", definizione:"AND logico",
     domande:[
       {testo:"Con && il risultato è vero soltanto se entrambe le condizioni sono vere.", risposta:true},
       {testo:"Con && basta che una sola condizione sia vera.", risposta:false},
@@ -33,7 +33,7 @@ const operatori = [
     ]
   },
   {
-    simbolo:"!", definizione:"NOT logico: inverte il valore booleano",
+    simbolo:"!", definizione:"NOT logico",
     domande:[
       {testo:"!true produce false.", risposta:true},
       {testo:"! è l'operatore OR logico.", risposta:false},
@@ -41,7 +41,7 @@ const operatori = [
     ]
   },
   {
-    simbolo:"=", definizione:"assegnamento: assegna un valore a una variabile",
+    simbolo:"=", definizione:"assegnamento",
     domande:[
       {testo:"In C++, x = 5 assegna il valore 5 alla variabile x.", risposta:true},
       {testo:"= verifica se due valori sono uguali.", risposta:false},
@@ -49,7 +49,7 @@ const operatori = [
     ]
   },
   {
-    simbolo:"==", definizione:"uguaglianza: confronta due valori",
+    simbolo:"==", definizione:"uguaglianza",
     domande:[
       {testo:"== confronta due valori per verificare se sono uguali.", risposta:true},
       {testo:"== assegna il valore a una variabile.", risposta:false},
@@ -57,7 +57,7 @@ const operatori = [
     ]
   },
   {
-    simbolo:"!=", definizione:"diverso: verifica se due valori non sono uguali",
+    simbolo:"!=", definizione:"diverso",
     domande:[
       {testo:"!= restituisce true quando i due valori confrontati sono diversi.", risposta:true},
       {testo:"!= significa maggiore o uguale.", risposta:false},
