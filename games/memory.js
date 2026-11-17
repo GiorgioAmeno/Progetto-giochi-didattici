@@ -235,7 +235,7 @@ function flip(b){
     setTimeout(()=>{
       hideCard(first);hideCard(second);
       first=second=null;locked=false;
-    },2750);
+    },2000);
   }
 }
 
