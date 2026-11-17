@@ -45,7 +45,7 @@ const operatori = [
     domande:[
       {testo:"In C++, x = 5 assegna il valore 5 alla variabile x.", risposta:true},
       {testo:"= verifica se due valori sono uguali.", risposta:false},
-      {testo:"L'operatore = è usato per assegnare un valore.", risposta:true}
+      {testo:"L'operatore = è usato per assegnare un valore ad una variabile.", risposta:true}
     ]
   },
   {
@@ -77,7 +77,7 @@ const operatori = [
     domande:[
       {testo:"9 > 4 restituisce true.", risposta:true},
       {testo:"> significa minore o uguale.", risposta:false},
-      {testo:"3 > 7 restituisce true.", risposta:false}
+      {testo:"7 > 3 restituisce false.", risposta:false}
     ]
   },
   {
@@ -115,9 +115,9 @@ const operatori = [
   {
     simbolo:"/", definizione:"divisione",
     domande:[
-      {testo:"L'operatore / esegue una divisione.", risposta:true},
+      {testo:"L'operatore / esegue una divisione in relazione al tipo di dati.", risposta:true},
       {testo:"/ calcola il resto della divisione intera.", risposta:false},
-      {testo:"12 / 3 vale 4.", risposta:true}
+      {testo:"13 / 3 vale 4.", risposta:true}
     ]
   },
   {
@@ -125,7 +125,7 @@ const operatori = [
     domande:[
       {testo:"17 % 5 restituisce 2.", risposta:true},
       {testo:"% esegue una divisione e restituisce il quoziente.", risposta:false},
-      {testo:"10 % 2 restituisce 0.", risposta:true}
+      {testo:"8 % 2 restituisce 0.", risposta:true}
     ]
   },
   {
@@ -243,7 +243,7 @@ function askForOperator(isLastPair){
   const item=operatori.find(o=>o.simbolo===Array.from(matched).at(-1));
   question=shuffle(item.domande)[0];
   document.querySelector("#question-text").textContent=
-    "Operatore "+item.simbolo+" – "+item.definizione+".\n\n"+question.testo;
+    "Operatore "+item.simbolo+"   "+item.definizione+".\n\n"+question.testo;
   qd.dataset.lastPair=isLastPair?"true":"false";
   qd.showModal();
 }
