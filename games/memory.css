@@ -1,1 +1,22 @@
-.game{width:min(100%,560px);margin:auto;padding:16px 13px}header{display:flex;gap:13px;margin:8px 0 18px}header a{white-space:nowrap;color:#1769aa;text-decoration:none;font-weight:700}h1{font-size:1.35rem;margin:0 0 4px}header p,.hint{color:#617184;font-size:.9rem;margin:0}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.stats div{background:white;border:1px solid #dbe4ed;border-radius:13px;padding:12px;display:flex;justify-content:space-between}.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:15px}.memory-card{aspect-ratio:1;background:#1c466b;color:white;border:0;border-radius:13px;font-size:clamp(1.1rem,6vw,1.7rem);font-weight:800;margin:0;padding:2px;box-shadow:0 3px 0 #102e49}.memory-card.revealed{background:white;color:#17324c;border:2px solid #8db6d8;box-shadow:none}.memory-card.matched{background:#e1f4e9;color:#17324c;border:2px solid #77b995;box-shadow:none}.hint{line-height:1.5;margin:10px 0}#game-message{text-align:center;min-height:24px;color:#526477}dialog{border:0;border-radius:20px;padding:0;width:min(calc(100% - 28px),420px);box-shadow:0 20px 70px #10203055}dialog::backdrop{background:#0b1d2dbb}.dialog-card{padding:24px}.dialog-card small{color:#1769aa;font-weight:800;letter-spacing:.08em}.dialog-card h2{line-height:1.35}.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dialog-card button{margin:0;min-height:52px}.dialog-card a{display:block;text-align:center;margin-top:15px;color:#1769aa;text-decoration:none;font-weight:700}
+.game{width:min(100%,560px);margin:auto;padding:16px 13px}
+header{display:flex;gap:13px;margin:8px 0 18px}
+header a{white-space:nowrap;color:#1769aa;text-decoration:none;font-weight:700}
+h1{font-size:1.35rem;margin:0 0 4px}
+header p,.hint{color:#617184;font-size:.9rem;margin:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.stats div{background:white;border:1px solid #dbe4ed;border-radius:13px;padding:12px;display:flex;justify-content:space-between}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:15px}
+.memory-card{aspect-ratio:1;background:#1c466b;color:white;border:0;border-radius:13px;font-size:clamp(1rem,4vw,1.35rem);font-weight:800;margin:0;padding:6px;box-shadow:0 3px 0 #102e49;display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere;word-break:normal;line-height:1.2}
+.memory-card.revealed{background:white;color:#17324c;border:2px solid #8db6d8;box-shadow:none}
+.memory-card.matched{background:#e1f4e9;color:#17324c;border:2px solid #77b995;box-shadow:none}
+.card-main{display:block;text-align:center;font-size:clamp(.8rem,3.2vw,1.05rem)}
+.hint{line-height:1.5;margin:10px 0}
+#game-message{text-align:center;min-height:24px;color:#526477}
+dialog{border:0;border-radius:20px;padding:0;width:min(calc(100% - 28px),420px);box-shadow:0 20px 70px #10203055}
+dialog::backdrop{background:#0b1d2dbb}
+.dialog-card{padding:24px}
+.dialog-card small{color:#1769aa;font-weight:800;letter-spacing:.08em}
+.dialog-card h2{line-height:1.35;white-space:pre-line}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dialog-card button{margin:0;min-height:52px}
+.dialog-card a{display:block;text-align:center;margin-top:15px;color:#1769aa;text-decoration:none;font-weight:700}
