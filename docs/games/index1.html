@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123b55">
+<title>Array Index Sniper – Caccia al tesoro degli array</title>
+<script src="../config.js"></script>
+<style>
+:root{
+  --sea:#123b55;--sea2:#1d5870;--foam:#e9f6f2;--paper:#fff4d8;--paper2:#f6e5bb;
+  --ink:#233746;--gold:#e5a92f;--gold-dark:#9b6414;--red:#a93e35;--green:#28734e;
+  --shadow:0 10px 28px rgba(18,42,55,.18);--radius:20px;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+ background:radial-gradient(circle at 15% 15%,#2b7180 0,transparent 28%),linear-gradient(145deg,#0d3048,#1b6172 55%,#123b55);
+ padding:clamp(10px,2.5vw,24px)}
+button{font:inherit}
+.shell{max-width:980px;margin:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#fff;margin:0 auto 14px}
+.brand{font-weight:900;letter-spacing:.04em}.exit{color:#fff;text-decoration:none;border:1px solid #ffffff70;padding:9px 13px;border-radius:999px}
+.game{background:var(--paper);border:4px solid #d6a64c;border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+.hero{padding:clamp(16px,3vw,26px);background:linear-gradient(120deg,#f9e9c2,#fff7e4);border-bottom:2px dashed #c99a47}
+.hero-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:clamp(1.45rem,4vw,2.35rem);margin:0;color:var(--sea);line-height:1.08}
+.subtitle{margin:7px 0 0;color:#52636b;font-size:.95rem}
+.pirate{font-size:clamp(2.6rem,7vw,4.2rem);filter:drop-shadow(0 3px 1px #b58b45)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+.stat{background:#fffaf0;border:1px solid #e6d3a6;border-radius:14px;padding:9px 12px;text-align:center}
+.stat small{display:block;color:#69777a;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em}
+.stat strong{display:block;font-size:clamp(1.05rem,3vw,1.4rem);color:var(--sea);font-variant-numeric:tabular-nums}
+.content{padding:clamp(14px,3vw,26px)}
+.progress-track{height:9px;background:#e4d4b0;border-radius:20px;overflow:hidden;margin-bottom:18px}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#d89422,#f3c64e);transition:width .25s}
+.mission{background:#fffaf0;border:2px solid #e4c985;border-radius:18px;padding:clamp(15px,3vw,23px);text-align:center}
+.eyebrow{font-weight:800;color:var(--gold-dark);font-size:.76rem;letter-spacing:.12em;text-transform:uppercase}
+.question{font-size:clamp(1.15rem,3.8vw,1.8rem);line-height:1.3;margin:9px 0 5px;color:#1c3e51;font-weight:850}
+.question code{background:#e8f0ed;padding:.1em .32em;border-radius:7px;color:#8b4e12}
+.hint{margin:7px 0 0;color:#63727a;font-size:.9rem}
+.array-wrap{margin:18px 0 13px;background:#eaf3ed;border:2px solid #bfd4c7;border-radius:17px;padding:13px}
+.array-label{text-align:left;font-weight:800;color:#315b50;margin:0 0 10px}
+.array{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.cell{min-width:0;background:#fff;border:2px solid #b8cdbf;border-radius:12px;padding:8px 3px 10px;text-align:center;box-shadow:0 3px 0 #c6d6c9}
+.cell .idx{display:block;font-size:.72rem;color:#53716a;font-weight:800}
+.cell .val{display:block;font-size:clamp(1.1rem,4vw,1.65rem);font-weight:900;color:#183e50;margin-top:2px}
+.cell.target{border-color:var(--gold);background:#fff2c9;box-shadow:0 3px 0 #d9b45e}
+.cell.good{border-color:#5d9c72;background:#e4f6e8}
+.cell.bad{border-color:#c46b5f;background:#ffebe7}
+.answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:17px}
+.answer{border:2px solid #c9a85d;border-radius:14px;background:#fffdf6;color:#244455;min-height:58px;padding:12px 8px;font-size:clamp(1.05rem,3vw,1.4rem);font-weight:850;box-shadow:0 4px 0 #ddc58f;cursor:pointer;touch-action:manipulation}
+.answer:active{transform:translateY(2px);box-shadow:0 2px 0 #ddc58f}
+.answer:disabled{opacity:.72;cursor:default}
+.answer.correct{background:#dff4e4;border-color:#398457;color:#205d3b}
+.answer.wrong{background:#ffe5df;border-color:#b9574c;color:#8d3028}
+.feedback{min-height:34px;text-align:center;font-weight:800;margin:14px 0 0}
+.feedback.good{color:var(--green)}.feedback.bad{color:var(--red)}
+.footer-note{text-align:center;color:#6b6d61;font-size:.78rem;margin:14px 0 0}
+.overlay{position:fixed;inset:0;background:#071e2dcc;display:grid;place-items:center;padding:18px;z-index:5}
+.panel{max-width:480px;width:100%;background:var(--paper);border:4px solid #d6a64c;border-radius:24px;padding:25px;text-align:center;box-shadow:var(--shadow)}
+.panel h2{color:var(--sea);margin:8px 0}.panel p{line-height:1.5}
+.primary{border:0;border-radius:13px;background:var(--sea);color:white;padding:13px 20px;font-weight:850;cursor:pointer}
+.hidden{display:none!important}
+@media(max-width:520px){.array{gap:4px}.cell{border-radius:9px;padding:7px 1px}.answers{gap:7px}.answer{padding:10px 4px;min-height:55px}.stats{gap:6px}.stat{padding:8px 4px}}
+@media (orientation:landscape) and (max-height:560px){
+ body{padding:6px}.topbar{margin-bottom:5px}.hero{padding:10px 18px}.hero-row{align-items:center}.pirate{font-size:2rem}
+ .subtitle{margin-top:3px}.stats{margin-top:8px}.content{padding:10px 18px}.mission{padding:9px 14px}
+ .array-wrap{margin:9px 0;padding:8px}.array{max-width:650px;margin:auto}.answers{margin-top:9px}.answer{min-height:44px;padding:6px}
+ .feedback{margin-top:6px;min-height:22px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">🏴‍☠️ CIURMA C++ · MISSIONE ARRAY</div>
+    <a class="exit" href="../index.html">← Esci</a>
+  </div>
+
+  <main class="game">
+    <header class="hero">
+      <div class="hero-row">
+        <div>
+          <h1>Array Index Sniper</h1>
+          <p class="subtitle" id="welcome">Trova il tesoro nascosto nell'array!</p>
+        </div>
+        <div class="pirate" aria-hidden="true">🏴‍☠️</div>
+      </div>
+      <section class="stats" aria-label="Statistiche della partita">
+        <div class="stat"><small>⏱ Tempo</small><strong id="timer">00:00</strong></div>
+        <div class="stat"><small>🎯 Domanda</small><strong id="counter">0 / 20</strong></div>
+        <div class="stat"><small>💰 Punti</small><strong id="score">0</strong></div>
+      </section>
+    </header>
+
+    <section class="content">
+      <div class="progress-track" aria-label="Avanzamento"><div class="progress-fill" id="progress"></div></div>
+      <section class="mission">
+        <div class="eyebrow" id="mission-type">Mappa del tesoro</div>
+        <div class="question" id="question">Preparati, mozzo!</div>
+        <p class="hint" id="hint">Studia gli indici: in C++ il primo elemento è in posizione 0.</p>
+      </section>
+
+      <section class="array-wrap">
+        <p class="array-label">🗺️ Il tuo array <code>int v[6]</code></p>
+        <div class="array" id="array" aria-label="Elementi dell'array"></div>
+      </section>
+
+      <div class="answers" id="answers" aria-label="Risposte possibili"></div>
+      <p class="feedback" id="feedback" aria-live="polite"></p>
+      <p class="footer-note">Un array di 6 elementi ha indici validi da 0 a 5. L'accesso fuori limite non ha un valore definito in C++.</p>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="welcome-screen">
+  <section class="panel">
+    <div style="font-size:3rem">🧭</div>
+    <h2>All'arrembaggio, esploratore!</h2>
+    <p>Risolvi 20 domande sugli array C++. Trova valori e indici, ma fai attenzione agli accessi fuori dai limiti!</p>
+    <p><strong>Ogni risposta corretta vale 50 dobloni.</strong></p>
+    <button class="primary" id="start-button">Inizia la caccia al tesoro</button>
+  </section>
+</div>
+
+<div class="overlay hidden" id="result-screen">
+  <section class="panel">
+    <div style="font-size:3rem" id="result-icon">🏆</div>
+    <h2>Missione completata!</h2>
+    <p id="result-summary"></p>
+    <p id="save-status">Salvataggio dei risultati…</p>
+    <button class="primary" id="again-button">Nuova partita</button>
+    <p><a href="../index.html">Torna alla pagina di accesso</a></p>
+  </section>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ==========================================================
+  // IMPOSTAZIONI FACILI DA MODIFICARE
+  // ==========================================================
+  const NUMERO_DOMANDE = 20;
+  const PUNTI_PER_RISPOSTA = 50;
+  const ELEMENTI_ARRAY = 6;
+  // ==========================================================
+
+  const API = window.APP_CONFIG?.API_BASE?.replace(/\/$/, "");
+  const token = sessionStorage.getItem("studentGameToken");
+  const valoriPossibili = [1, 4, 7, 9, 12, 15, 18, 23, 31, 42, 56, 68, 77, 88, 99];
+
+  const $ = id => document.getElementById(id);
+  const el = {
+    welcome:$("welcome"), timer:$("timer"), counter:$("counter"), score:$("score"),
+    progress:$("progress"), missionType:$("mission-type"), question:$("question"),
+    hint:$("hint"), array:$("array"), answers:$("answers"), feedback:$("feedback"),
+    welcomeScreen:$("welcome-screen"), resultScreen:$("result-screen"),
+    resultSummary:$("result-summary"), saveStatus:$("save-status")
+  };
+
+  let studentName = "Studente";
+  let questions = [];
+  let questionIndex = 0;
+  let correctAnswers = 0;
+  let score = 0;
+  let startedAt = 0;
+  let timerHandle = null;
+  let locked = false;
+  let currentArray = [];
+
+  const shuffle = list => {
+    const a = [...list];
+    for (let i=a.length-1;i>0;i--) {
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  };
+  const pick = list => list[Math.floor(Math.random()*list.length)];
+  const formatTime = seconds =>
+    String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0");
+  const elapsedSeconds = () => Math.max(0,Math.floor((Date.now()-startedAt)/1000));
+
+  function makeArray() {
+    return shuffle(valoriPossibili).slice(0,ELEMENTI_ARRAY);
+  }
+
+  function makeQuestion() {
+    const values = makeArray();
+    const type = Math.floor(Math.random()*3);
+    if (type === 0) {
+      const index = Math.floor(Math.random()*ELEMENTI_ARRAY);
+      return {values,type:"value",index,correct:String(values[index]),
+        prompt:`Qual è il valore di <code>v[${index}]</code>?`,
+        hint:"Leggi il numero scritto nella casella con l'indice richiesto.",
+        options:shuffle([String(values[index]),...shuffle(valoriPossibili.filter(n=>n!==values[index])).slice(0,2)])};
+    }
+    if (type === 1) {
+      const index = Math.floor(Math.random()*ELEMENTI_ARRAY);
+      const target = values[index];
+      return {values,type:"index",target,correct:String(index),
+        prompt:`Quale indice contiene il valore <code>${target}</code>?`,
+        hint:"Cerca il valore nell'array e leggi l'indice sopra la casella.",
+        options:shuffle([String(index),...shuffle([0,1,2,3,4,5].filter(n=>n!==index)).slice(0,2)])};
+    }
+    return {values,type:"bounds",index:ELEMENTI_ARRAY,correct:"no",
+      prompt:`L'accesso <code>v[${ELEMENTI_ARRAY}]</code> è valido?`,
+      hint:"Gli indici validi sono da 0 a 5. In C++ un accesso fuori limite ha comportamento indefinito.",
+      options:shuffle(["sì","no","vale 0"])};
+  }
+
+  function createQuestionSet() {
+    questions = Array.from({length:NUMERO_DOMANDE},makeQuestion);
+  }
+
+  function renderArray(q) {
+    el.array.replaceChildren();
+    q.values.forEach((value,index) => {
+      const cell=document.createElement("div");
+      cell.className="cell";
+      const idx=document.createElement("span");
+      idx.className="idx";
+      idx.textContent=`indice ${index}`;
+      const val=document.createElement("span");
+      val.className="val";
+      val.textContent=value;
+      cell.append(idx,val);
+      if ((q.type==="value" && q.index===index) || (q.type==="index" && q.target===value)) cell.classList.add("target");
+      el.array.append(cell);
+    });
+  }
+
+  function renderQuestion() {
+    locked=false;
+    const q=questions[questionIndex];
+    el.counter.textContent=`${questionIndex+1} / ${NUMERO_DOMANDE}`;
+    el.score.textContent=score;
+    el.progress.style.width=`${(questionIndex/NUMERO_DOMANDE)*100}%`;
+    el.missionType.textContent=q.type==="value"?"🔎 Trova il valore":q.type==="index"?"🧭 Trova l'indice":"⚠️ Attenzione ai confini";
+    el.question.innerHTML=q.prompt;
+    el.hint.textContent=q.hint;
+    el.feedback.textContent="";
+    el.feedback.className="feedback";
+    renderArray(q);
+    el.answers.replaceChildren();
+    q.options.forEach(option=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="answer";
+      button.textContent=option;
+      button.addEventListener("click",()=>answer(option,button));
+      el.answers.append(button);
+    });
+  }
+
+  function answer(value,button) {
+    if (locked) return;
+    locked=true;
+    const q=questions[questionIndex];
+    const isCorrect=String(value)===q.correct;
+    [...el.answers.children].forEach(b=>b.disabled=true);
+    if (isCorrect) {
+      correctAnswers++;
+      score+=PUNTI_PER_RISPOSTA;
+      button.classList.add("correct");
+      el.feedback.textContent="🎉 Tesoro trovato! Risposta corretta.";
+      el.feedback.className="feedback good";
+    } else {
+      button.classList.add("wrong");
+      const correctButton=[...el.answers.children].find(b=>b.textContent===q.correct);
+      if(correctButton)correctButton.classList.add("correct");
+      el.feedback.textContent=q.type==="bounds"
+        ?"Quasi! v[6] è fuori dai limiti: l'accesso non è valido."
+        :`Non proprio! La risposta corretta era ${q.correct}.`;
+      el.feedback.className="feedback bad";
+    }
+    el.score.textContent=score;
+    setTimeout(()=>{
+      questionIndex++;
+      if(questionIndex>=NUMERO_DOMANDE) finish();
+      else renderQuestion();
+    },1050);
+  }
+
+  async function finish() {
+    clearInterval(timerHandle);
+    const duration=elapsedSeconds();
+    el.progress.style.width="100%";
+    $("result-icon").textContent=correctAnswers>=16?"🏆":"🗺️";
+    el.resultSummary.textContent=
+      `${studentName}: ${correctAnswers} risposte corrette su ${NUMERO_DOMANDE}. `+
+      `Punteggio: ${score} dobloni. Tempo: ${formatTime(duration)}.`;
+    el.resultScreen.classList.remove("hidden");
+    el.saveStatus.textContent="Salvataggio dei risultati…";
+
+    try {
+      const response=await fetch(API+"/api/games/complete",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer "+token
+        },
+        body:JSON.stringify({
+          durationSeconds:duration,
+          correctAnswers,
+          totalQuestions:NUMERO_DOMANDE,
+          score
+        })
+      });
+      const data=await response.json();
+      if(!response.ok) throw new Error(data.error||"Salvataggio non riuscito.");
+      el.saveStatus.textContent="✅ Risultato salvato correttamente.";
+    } catch(error) {
+      el.saveStatus.textContent="⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.";
+      console.error("Errore salvataggio index1:",error);
+    }
+  }
+
+  function resetGame() {
+    clearInterval(timerHandle);
+    questionIndex=0;correctAnswers=0;score=0;startedAt=Date.now();
+    createQuestionSet();
+    el.resultScreen.classList.add("hidden");
+    renderQuestion();
+    timerHandle=setInterval(()=>el.timer.textContent=formatTime(elapsedSeconds()),500);
+  }
+
+  $("start-button").addEventListener("click",()=>{
+    el.welcomeScreen.classList.add("hidden");
+    resetGame();
+  });
+  $("again-button").addEventListener("click",resetGame);
+
+  async function init() {
+    if(!token || !API) {
+      el.welcome.textContent="Accesso non disponibile: torna alla pagina iniziale.";
+      $("start-button").disabled=true;
+      return;
+    }
+    try {
+      const response=await fetch(API+"/api/me",{
+        headers:{"Authorization":"Bearer "+token}
+      });
+      const data=await response.json();
+      if(!response.ok)throw new Error("Sessione non valida.");
+      studentName=data.student||"Studente";
+      el.welcome.textContent=`Benvenuto ${studentName}! Il tesoro è nascosto negli indici.`;
+    } catch(error) {
+      sessionStorage.removeItem("studentGameToken");
+      location.replace("../index.html");
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
