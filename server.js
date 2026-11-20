@@ -11,8 +11,116 @@ function admin(req,res,next){if(req.headers["x-admin-key"]!==process.env.ADMIN_K
 app.get("/api/health",async(req,res)=>{try{await pool.query("SELECT 1");res.json({ok:true,database:"connected"});}catch(e){res.status(503).json({ok:false,database:"unavailable"});}});
 app.post("/api/auth/login",async(req,res)=>{try{const name=String(req.body.fullName||"").trim().replace(/\s+/g," "),pw=String(req.body.password||""),code=String(req.body.gameCode||"").trim().toUpperCase();if(!name||!pw||!code)return res.status(400).json({error:"Compila nome e cognome, password e codice gioco."});const u=(await pool.query("SELECT * FROM users WHERE full_name_normalized=$1",[norm(name)])).rows[0];if(!u||!u.active||!await bcrypt.compare(pw,u.password_hash))return res.status(401).json({error:"Nome/cognome o password non corretti."});const g=(await pool.query("SELECT * FROM games WHERE game_code=$1 AND active=TRUE",[code])).rows[0];if(!g)return res.status(404).json({error:"Codice gioco non valido o non attivo."});await pool.query(`INSERT INTO user_game_progress(user_id,game_id,started,first_started_at,last_started_at) VALUES($1,$2,TRUE,NOW(),NOW()) ON CONFLICT(user_id,game_id) DO UPDATE SET started=TRUE,first_started_at=COALESCE(user_game_progress.first_started_at,NOW()),last_started_at=NOW(),updated_at=NOW()`,[u.id,g.id]);const token=jwt.sign({userId:String(u.id),gameId:String(g.id)},process.env.JWT_SECRET,{expiresIn:"12h"});res.json({token,student:u.full_name,game:{code:g.game_code,title:g.title,path:g.game_path}});}catch(e){console.error(e);res.status(500).json({error:"Errore del server durante l'accesso."});}});
 app.get("/api/me",auth,async(req,res)=>{try{const r=await pool.query("SELECT u.full_name,g.title,g.game_code FROM users u JOIN games g ON g.id=$2 WHERE u.id=$1 AND u.active=TRUE AND g.active=TRUE",[req.a.userId,req.a.gameId]);if(!r.rowCount)return res.status(401).json({error:"Account o gioco non attivo."});res.json({student:r.rows[0].full_name,game:r.rows[0].title,gameCode:r.rows[0].game_code});}catch(e){res.status(500).json({error:"Errore sessione."});}});
-app.post("/api/games/complete",auth,async(req,res)=>{const sec=Number(req.body.durationSeconds);if(!Number.isInteger(sec)||sec<0||sec>86400)return res.status(400).json({error:"Durata non valida."});const c=await pool.connect();try{await c.query("BEGIN");await c.query("INSERT INTO game_sessions(user_id,game_id,duration_seconds) VALUES($1,$2,$3)",[req.a.userId,req.a.gameId,sec]);await c.query(`INSERT INTO user_game_progress(user_id,game_id,started,first_started_at,completion_count,best_seconds,last_started_at,last_completed_at) VALUES($1,$2,TRUE,NOW(),1,$3,NOW(),NOW()) ON CONFLICT(user_id,game_id) DO UPDATE SET completion_count=user_game_progress.completion_count+1,best_seconds=CASE WHEN user_game_progress.best_seconds IS NULL THEN EXCLUDED.best_seconds ELSE LEAST(user_game_progress.best_seconds,EXCLUDED.best_seconds) END,last_completed_at=NOW(),updated_at=NOW()`,[req.a.userId,req.a.gameId,sec]);await c.query("COMMIT");res.json({ok:true});}catch(e){await c.query("ROLLBACK");console.error(e);res.status(500).json({error:"Salvataggio non riuscito."});}finally{c.release();}});
+app.post("/api/games/complete",auth,async(req,res)=>{
+  const sec=Number(req.body.durationSeconds);
+  const hasScore = ["correctAnswers","totalQuestions","score"].some(k => req.body[k] !== undefined);
+  let correct=null,total=null,score=null;
+
+  if(!Number.isInteger(sec)||sec<0||sec>86400)
+    return res.status(400).json({error:"Durata non valida."});
+
+  if(hasScore){
+    correct=Number(req.body.correctAnswers);
+    total=Number(req.body.totalQuestions);
+    score=Number(req.body.score);
+    if(!Number.isInteger(correct)||!Number.isInteger(total)||!Number.isInteger(score)||
+       total<1||correct<0||correct>total||score<0)
+      return res.status(400).json({error:"Statistiche del gioco non valide."});
+  }
+
+  const c=await pool.connect();
+  try{
+    await c.query("BEGIN");
+    await c.query(
+      `INSERT INTO game_sessions
+       (user_id,game_id,duration_seconds,correct_answers,total_questions,score)
+       VALUES($1,$2,$3,$4,$5,$6)`,
+      [req.a.userId,req.a.gameId,sec,correct,total,score]
+    );
+    await c.query(
+      `INSERT INTO user_game_progress
+       (user_id,game_id,started,first_started_at,completion_count,best_seconds,last_started_at,last_completed_at)
+       VALUES($1,$2,TRUE,NOW(),1,$3,NOW(),NOW())
+       ON CONFLICT(user_id,game_id) DO UPDATE SET
+         completion_count=user_game_progress.completion_count+1,
+         best_seconds=CASE
+           WHEN user_game_progress.best_seconds IS NULL THEN EXCLUDED.best_seconds
+           ELSE LEAST(user_game_progress.best_seconds,EXCLUDED.best_seconds)
+         END,
+         last_completed_at=NOW(),updated_at=NOW()`,
+      [req.a.userId,req.a.gameId,sec]
+    );
+    await c.query("COMMIT");
+    res.json({ok:true});
+  }catch(e){
+    await c.query("ROLLBACK");
+    console.error(e);
+    res.status(500).json({error:"Salvataggio non riuscito."});
+  }finally{
+    c.release();
+  }
+});
 app.post("/api/admin/import",admin,async(req,res)=>{try{const {accounts=[],games=[]}=req.body;if(!Array.isArray(accounts)||!Array.isArray(games))return res.status(400).json({error:"Formato non valido"});let created=0,updated=0,saved=0;for(const a of accounts){const name=String(a.full_name||"").trim().replace(/\s+/g," ");if(!name)continue;const n=norm(name),active=String(a.active).toLowerCase()!=="false";const old=(await pool.query("SELECT id FROM users WHERE full_name_normalized=$1",[n])).rows[0];if(a.password){const hash=await bcrypt.hash(String(a.password),12);if(old){await pool.query("UPDATE users SET full_name=$1,password_hash=$2,active=$3,updated_at=NOW() WHERE id=$4",[name,hash,active,old.id]);updated++;}else{await pool.query("INSERT INTO users(full_name,full_name_normalized,password_hash,active) VALUES($1,$2,$3,$4)",[name,n,hash,active]);created++;}}else if(old){await pool.query("UPDATE users SET full_name=$1,active=$2,updated_at=NOW() WHERE id=$3",[name,active,old.id]);updated++;}else return res.status(400).json({error:"Password obbligatoria per nuovo account: "+name});}
 for(const g of games){const code=String(g.game_code||"").trim().toUpperCase(),title=String(g.title||"").trim(),path=String(g.game_path||"").trim();if(!code||!title||!path)continue;if(path.startsWith("/")||path.includes("..")||!path.endsWith(".html"))return res.status(400).json({error:"Percorso non valido per "+code});const active=String(g.active).toLowerCase()!=="false";await pool.query(`INSERT INTO games(game_code,title,game_path,active) VALUES($1,$2,$3,$4) ON CONFLICT(game_code) DO UPDATE SET title=EXCLUDED.title,game_path=EXCLUDED.game_path,active=EXCLUDED.active,updated_at=NOW()`,[code,title,path,active]);saved++;}res.json({ok:true,usersCreated:created,usersUpdated:updated,gamesSaved:saved});}catch(e){console.error(e);res.status(500).json({error:"Importazione non riuscita."});}});
-app.get("/api/admin/export",admin,async(req,res)=>{try{const a=await pool.query(`SELECT u.full_name AS "Alunno",g.game_code AS "Codice gioco",g.title AS "Gioco",CASE WHEN p.started THEN 'Sì' ELSE 'No' END AS "Iniziato",COALESCE(p.completion_count,0) AS "Completamenti",p.best_seconds AS "Miglior tempo (secondi)",p.first_started_at AS "Primo avvio",p.last_started_at AS "Ultimo avvio",p.last_completed_at AS "Ultimo completamento" FROM users u CROSS JOIN games g LEFT JOIN user_game_progress p ON p.user_id=u.id AND p.game_id=g.id ORDER BY u.full_name,g.title`);const b=await pool.query(`SELECT u.full_name AS "Alunno",g.game_code AS "Codice gioco",g.title AS "Gioco",s.duration_seconds AS "Durata (secondi)",s.completed_at AS "Completato il" FROM game_sessions s JOIN users u ON u.id=s.user_id JOIN games g ON g.id=s.game_id ORDER BY s.completed_at DESC`);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(a.rows),"Riepilogo");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(b.rows),"Tentativi completati");res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");res.setHeader("Content-Disposition",`attachment; filename="risultati_${new Date().toISOString().slice(0,10)}.xlsx"`);res.send(XLSX.write(wb,{type:"buffer",bookType:"xlsx"}));}catch(e){console.error(e);res.status(500).json({error:"Esportazione non riuscita."});}});
-app.get("/",(req,res)=>res.json({service:"Piattaforma didattica C++",status:"online",health:"/api/health"}));app.listen(PORT,()=>console.log("API attiva sulla porta "+PORT));
+
+app.get("/api/admin/export",admin,async(req,res)=>{
+  try{
+    const a=await pool.query(`
+      SELECT
+        u.full_name AS "Alunno",
+        g.game_code AS "Codice gioco",
+        g.title AS "Gioco",
+        CASE WHEN p.started THEN 'Sì' ELSE 'No' END AS "Iniziato",
+        COALESCE(p.completion_count,0) AS "Completamenti",
+        p.best_seconds AS "Miglior tempo (secondi)",
+        COALESCE(st.correct_total,0) AS "Risposte corrette totali",
+        COALESCE(st.questions_total,0) AS "Domande totali",
+        COALESCE(st.score_total,0) AS "Punteggio totale",
+        st.best_score AS "Miglior punteggio",
+        p.first_started_at AS "Primo avvio",
+        p.last_started_at AS "Ultimo avvio",
+        p.last_completed_at AS "Ultimo completamento"
+      FROM users u
+      CROSS JOIN games g
+      LEFT JOIN user_game_progress p
+        ON p.user_id=u.id AND p.game_id=g.id
+      LEFT JOIN (
+        SELECT user_id,game_id,
+          SUM(correct_answers) AS correct_total,
+          SUM(total_questions) AS questions_total,
+          SUM(score) AS score_total,
+          MAX(score) AS best_score
+        FROM game_sessions
+        GROUP BY user_id,game_id
+      ) st ON st.user_id=u.id AND st.game_id=g.id
+      ORDER BY u.full_name,g.title
+    `);
+
+    const b=await pool.query(`
+      SELECT
+        u.full_name AS "Alunno",
+        g.game_code AS "Codice gioco",
+        g.title AS "Gioco",
+        s.duration_seconds AS "Durata (secondi)",
+        s.correct_answers AS "Risposte corrette",
+        s.total_questions AS "Domande totali",
+        s.score AS "Punteggio",
+        s.completed_at AS "Completato il"
+      FROM game_sessions s
+      JOIN users u ON u.id=s.user_id
+      JOIN games g ON g.id=s.game_id
+      ORDER BY s.completed_at DESC
+    `);
+
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(a.rows),"Riepilogo");
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(b.rows),"Tentativi completati");
+    res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition",
+      `attachment; filename="risultati_${new Date().toISOString().slice(0,10)}.xlsx"`);
+    res.send(XLSX.write(wb,{type:"buffer",bookType:"xlsx"}));
+  }catch(e){
+    console.error(e);
+    res.status(500).json({error:"Esportazione non riuscita."});
+  }
+});app.get("/",(req,res)=>res.json({service:"Piattaforma didattica C++",status:"online",health:"/api/health"}));app.listen(PORT,()=>console.log("API attiva sulla porta "+PORT));
