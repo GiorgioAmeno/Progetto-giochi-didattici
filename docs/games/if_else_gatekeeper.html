@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>If-Else Gatekeeper — C++ Logic Game</title>
+  <!-- Configurazione API della piattaforma -->
+  <script src="../config.js"></script>
+  <!-- Tailwind CSS per layout e utilità responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Google: Inter, JetBrains Mono (codice/cyberpunk), Press Start 2P (arcade) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    /* Reset e prevenzione scroll orizzontale su mobile */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      transition: background 0.4s ease, color 0.3s ease;
+    }
+
+    /* =====================================================================
+       TEMA 1: CYBERPUNK NEON
+       ===================================================================== */
+    body.theme-cyber {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #070913;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(255, 0, 170, 0.12) 0%, transparent 45%),
+        linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+      color: #e2f1f8;
+    }
+
+    .theme-cyber .panel-box {
+      background: rgba(12, 18, 34, 0.92);
+      border: 1.5px solid #00f3ff;
+      box-shadow: 0 0 18px rgba(0, 243, 255, 0.18), inset 0 0 12px rgba(0, 243, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .theme-cyber .visitor-box {
+      border-color: #ff00aa;
+      box-shadow: 0 0 18px rgba(255, 0, 170, 0.2), inset 0 0 12px rgba(255, 0, 170, 0.06);
+    }
+
+    .theme-cyber .branch-btn {
+      background: rgba(16, 26, 48, 0.95);
+      border: 1.5px solid rgba(0, 243, 255, 0.45);
+      border-radius: 8px;
+      color: #e2f1f8;
+      transition: all 0.18s ease;
+    }
+
+    .theme-cyber .branch-btn:active:not(:disabled) {
+      transform: scale(0.98);
+      border-color: #ff00aa;
+      box-shadow: 0 0 15px rgba(255, 0, 170, 0.5);
+    }
+
+    .theme-cyber .accent-title {
+      color: #00f3ff;
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    }
+
+    .theme-cyber .badge-pill {
+      background: rgba(0, 243, 255, 0.12);
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+      border-radius: 6px;
+    }
+
+    /* =====================================================================
+       TEMA 2: RETRO ARCADE 8-BIT
+       ===================================================================== */
+    body.theme-arcade {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #1a103c;
+      background-image: radial-gradient(#2c1b63 2px, transparent 2px);
+      background-size: 20px 20px;
+      color: #fff8e7;
+    }
+
+    .theme-arcade .arcade-font {
+      font-family: 'Press Start 2P', cursive;
+      letter-spacing: -0.5px;
+    }
+
+    .theme-arcade .panel-box {
+      background: #241654;
+      border: 4px solid #ffcc00;
+      box-shadow: 5px 5px 0px #0d0722;
+      border-radius: 4px;
+    }
+
+    .theme-arcade .visitor-box {
+      border-color: #ff4d6d;
+      box-shadow: 5px 5px 0px #0d0722;
+    }
+
+    .theme-arcade .branch-btn {
+      background: #311f73;
+      border: 3px solid #4cc9f0;
+      box-shadow: 4px 4px 0px #0d0722;
+      border-radius: 4px;
+      color: #ffffff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .theme-arcade .branch-btn:active:not(:disabled) {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px #0d0722;
+      border-color: #ffcc00;
+    }
+
+    .theme-arcade .accent-title {
+      color: #ffcc00;
+      text-shadow: 3px 3px 0px #d90429;
+    }
+
+    .theme-arcade .badge-pill {
+      background: #d90429;
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      border-radius: 2px;
+    }
+
+    /* =====================================================================
+       TEMA 3: MODERN GLASSMORPHISM
+       ===================================================================== */
+    body.theme-glass {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 38%, #311042 75%, #0f172a 100%);
+      background-attachment: fixed;
+      color: #f8fafc;
+    }
+
+    .theme-glass .code-font {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .theme-glass .panel-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+    }
+
+    .theme-glass .visitor-box {
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.14), rgba(168, 85, 247, 0.14));
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .theme-glass .branch-btn {
+      background: rgba(255, 255, 255, 0.09);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      color: #f8fafc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .theme-glass .branch-btn:active:not(:disabled) {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: #38bdf8;
+    }
+
+    .theme-glass .accent-title {
+      background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .theme-glass .badge-pill {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      border-radius: 9999px;
+    }
+
+    /* =====================================================================
+       COLORAZIONE SINTASSI C++ E STATI RISPOSTA (COMUNI A TUTTI I TEMI)
+       ===================================================================== */
+    .cpp-kw { color: #ff79c6; font-weight: 700; }     /* if, else, int, bool, char */
+    .cpp-type { color: #8be9fd; font-weight: 600; }   /* tipi */
+    .cpp-var { color: #f8f8f2; }                      /* nomi variabili */
+    .cpp-num { color: #bd93f9; font-weight: 700; }    /* numeri */
+    .cpp-bool { color: #ffb86c; font-weight: 700; }   /* true, false */
+    .cpp-str { color: #f1fa8c; }                      /* char / string */
+    .cpp-op { color: #50fa7b; font-weight: 700; }     /* &&, ||, !, ==, >= */
+
+    /* Feedback visivo pulsanti dopo la risposta */
+    .branch-correct {
+      background: rgba(16, 185, 129, 0.28) !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .branch-wrong {
+      background: rgba(239, 68, 68, 0.28) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.45) !important;
+      animation: shake 0.35s ease-in-out;
+    }
+
+    .branch-dimmed {
+      opacity: 0.45;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .animate-pop {
+      animation: popIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Selettore Tema attivo */
+    .theme-pill-active {
+      outline: 2px solid #ffffff;
+      transform: scale(1.04);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body class="theme-cyber flex flex-col items-center justify-start px-3 py-3 sm:py-6">
+
+  <!-- CONTENITORE PRINCIPALE MOBILE-FIRST (Max width ottimale per smartphone/tablet) -->
+  <main class="w-full max-w-md flex flex-col gap-3 pb-8">
+
+    <!-- BARRA SUPERIORE PIATTAFORMA (Uscita + Info Studente) -->
+    <nav class="flex items-center justify-between gap-2 px-1 text-xs">
+      <a href="../index.html"
+         class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 font-bold transition">
+        ← Esci
+      </a>
+      <span id="studentBanner" class="opacity-85 font-semibold truncate">
+        Verifica sessione…
+      </span>
+    </nav>
+
+    <!-- HEADER + SELETTORE 3 TEMI GRAFICI -->
+    <header class="panel-box p-3 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h1 id="mainTitle" class="text-base sm:text-lg font-extrabold tracking-tight accent-title">
+            IF-ELSE GATEKEEPER
+          </h1>
+          <p class="text-[11px] opacity-75">Valuta le condizioni C++ dall'alto in basso</p>
+        </div>
+        <!-- Toggle Timer Opzionale -->
+        <button id="timerToggleBtn" onclick="toggleTimerMode()" 
+                class="badge-pill px-2.5 py-1.5 text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+          <span id="timerIcon">⏱️</span>
+          <span id="timerLabel">Timer: OFF</span>
+        </button>
+      </div>
+
+      <!-- Barra Switch 3 Versioni Grafiche -->
+      <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-white/10" role="group" aria-label="Scegli tema grafico">
+        <button onclick="setTheme('cyber')" id="btn-theme-cyber"
+                class="theme-pill-active py-1.5 px-2 rounded-lg text-[11px] font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-400/50 transition">
+          ⚡ Cyber Neon
+        </button>
+        <button onclick="setTheme('arcade')" id="btn-theme-arcade"
+                class="py-1.5 px-2 rounded-lg text-[11px] font-bold bg-purple-950/90 text-yellow-300 border border-yellow-400/50 transition">
+          🕹️ 8-Bit Arcade
+        </button>
+        <button onclick="setTheme('glass')" id="btn-theme-glass"
+                class="py-1.5 px-2 rounded-lg text-[11px] font-bold bg-indigo-900/70 text-pink-200 border border-pink-300/40 transition">
+          💎 Glass UI
+        </button>
+      </div>
+    </header>
+
+    <!-- BARRA STATISTICHE: VITE, LIVELLO, TEMPO E PUNTEGGIO -->
+    <section id="hudSection" class="hidden panel-box px-3 py-2 flex items-center justify-between text-xs sm:text-sm">
+      <!-- Vite -->
+      <div class="flex items-center gap-1" aria-label="Vite rimaste">
+        <span id="livesDisplay" class="tracking-widest text-sm">❤️❤️❤️</span>
+      </div>
+
+      <!-- Indicatore Avanzamento Standard (Livello e Domanda X/12) -->
+      <div class="flex items-center gap-1">
+        <span id="progressBadge" class="badge-pill px-2 py-0.5 text-[11px] font-bold">
+          Lv.1/3 • 1/12
+        </span>
+      </div>
+
+      <!-- Tempo totale partita + Punteggio -->
+      <div class="flex items-center gap-2 font-bold">
+        <span class="text-sky-300 text-xs" id="elapsedDisplay">00:00</span>
+        <span class="text-emerald-400">PT: <span id="scoreDisplay">0</span></span>
+      </div>
+    </section>
+
+    <!-- BARRA TIMER RISPOSTA (visibile solo se attivata e durante il gioco) -->
+    <div id="timerBarContainer" class="hidden w-full h-2.5 rounded-full bg-black/40 overflow-hidden border border-white/15">
+      <div id="timerBarFill" class="h-full bg-gradient-to-r from-emerald-400 via-yellow-400 to-rose-500 transition-all duration-100" style="width: 100%;"></div>
+    </div>
+
+    <!-- =====================================================================
+         SCHERMATA INIZIALE: GUIDA PER PRINCIPIANTI C++ E AVVIO PARTITA
+         ===================================================================== -->
+    <section id="startScreen" class="panel-box p-4 flex flex-col gap-3.5 animate-pop">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl bg-black/35 p-2.5 rounded-xl border border-white/15">🛡️</div>
+        <div>
+          <span class="badge-pill px-2 py-0.5 text-[10px] font-bold uppercase">Guida Rapida C++</span>
+          <h2 id="welcomeHeading" class="font-extrabold text-base sm:text-lg mt-0.5 leading-tight">Benvenuto al Varco della CPU!</h2>
+        </div>
+      </div>
+
+      <p class="text-xs sm:text-sm opacity-90 leading-relaxed">
+        Sei il <strong>Gatekeeper</strong>: per ogni soggetto in arrivo leggerai i valori di alcune variabili C++ e dovrai cliccare l'unico ramo (la "porta") in cui entrerà il programma.
+      </p>
+
+      <!-- Regola d'oro del C++ -->
+      <div class="bg-black/45 rounded-xl p-3 border border-white/10 space-y-1.5">
+        <div class="text-xs font-extrabold text-amber-300 flex items-center gap-1.5">
+          <span>⚡</span>
+          <span>REGOLA D'ORO DI if / else if / else</span>
+        </div>
+        <p class="text-xs opacity-85 leading-relaxed">
+          Il C++ legge le condizioni <strong>dall'alto verso il basso</strong>. Appena ne trova una <strong>VERA (<code class="text-emerald-400">true</code>)</strong>, esegue quel blocco e <strong>salta tutti gli altri</strong>! Se nessuna è vera, entra nell'<code class="text-pink-400 font-bold">else</code> finale.
+        </p>
+      </div>
+
+      <!-- Mini-Legenda Operatori C++ -->
+      <div class="bg-black/45 rounded-xl p-3 border border-white/10">
+        <div class="text-xs font-extrabold text-cyan-300 mb-2">📖 Mini-Legenda Operatori C++</div>
+        <div class="grid grid-cols-2 gap-1.5 text-[11px] code-font">
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="cpp-op">==</span> uguale a
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="cpp-op">!=</span> diverso da
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="cpp-op">&amp;&amp;</span> AND (entrambe vere)
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="cpp-op">||</span> OR (almeno una vera)
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="cpp-op">!</span> NOT (inverte V/F)
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="cpp-op">%</span> modulo (resto div.)
+          </div>
+        </div>
+      </div>
+
+      <!-- Struttura della Sfida -->
+      <div class="bg-white/5 rounded-xl p-2.5 border border-white/10 text-xs flex items-center justify-between">
+        <div>
+          <div class="font-bold">🎯 Sfida Standard: 12 Domande</div>
+          <div class="text-[11px] opacity-75">3 Livelli (4 dom. ciascuno) • +300 pt per vita rimasta</div>
+        </div>
+        <span class="text-lg">❤️❤️❤️</span>
+      </div>
+
+      <button id="startBtn" onclick="startGame()"
+              class="w-full py-3.5 rounded-xl font-extrabold text-sm sm:text-base uppercase tracking-wider bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-slate-950 shadow-lg active:scale-98 transition">
+        🚀 Inizia Sfida (12 Domande)
+      </button>
+    </section>
+
+    <!-- SCHERMATA DI GIOCO PRINCIPALE -->
+    <div id="gameScreen" class="hidden flex flex-col gap-3">
+
+      <!-- 1. SCHEDA VISITATORE / VARIABILI IN INGRESSO -->
+      <section class="panel-box visitor-box p-3.5 animate-pop" id="visitorCard">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span id="visitorAvatar" class="text-2xl bg-black/30 p-1.5 rounded-lg border border-white/10">🤖</span>
+            <div>
+              <span class="text-[10px] uppercase tracking-wider opacity-70 block">Domanda <span id="roundNumber">1</span> di 12</span>
+              <h2 id="visitorName" class="font-bold text-sm sm:text-base leading-tight">Cittadino Cyber-01</h2>
+            </div>
+          </div>
+          <span id="difficultyTag" class="badge-pill px-2 py-0.5 text-[10px] font-bold uppercase">
+            Livello 1/3
+          </span>
+        </div>
+
+        <!-- Blocco Dichiarazione Variabili C++ -->
+        <div class="bg-black/55 rounded-lg p-2.5 border border-white/10 code-font text-xs sm:text-sm leading-relaxed overflow-x-auto">
+          <div class="text-[10px] text-slate-400 mb-1 select-none">// Valori attuali in memoria:</div>
+          <div id="variablesContainer" class="space-y-0.5"></div>
+        </div>
+      </section>
+
+      <!-- 2. BLOCCO CONDIZIONALE C++ INTERATTIVO (Rami cliccabili) -->
+      <section class="panel-box p-3.5 flex flex-col gap-2.5" id="codeSection">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider opacity-80">
+            👇 Tocca il ramo che viene eseguito:
+          </span>
+          <span class="text-[11px] opacity-65">Top-Down</span>
+        </div>
+
+        <!-- Contenitore dei rami if / else if / else -->
+        <div id="branchesContainer" class="flex flex-col gap-2.5"></div>
+      </section>
+
+      <!-- 3. PANNELLO SPIEGAZIONE DIDATTICA (Appare dopo la scelta) -->
+      <section id="feedbackPanel" class="hidden panel-box p-3.5 animate-pop border-2">
+        <div class="flex items-start gap-2.5">
+          <span id="feedbackIcon" class="text-2xl leading-none mt-0.5">✅</span>
+          <div class="flex-1 min-w-0">
+            <h3 id="feedbackTitle" class="font-extrabold text-sm sm:text-base">Esatto!</h3>
+            <p id="feedbackExplanation" class="text-xs sm:text-sm opacity-90 mt-1 leading-relaxed"></p>
+          </div>
+        </div>
+        <button id="nextBtn" onclick="nextRound()"
+                class="mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg active:scale-98 transition">
+          Prossima Domanda ➜
+        </button>
+      </section>
+
+    </div>
+
+    <!-- SCHERMATA FINE PARTITA (RIEPILOGO COMPLETO, BONUS VITE E SALVATAGGIO PIATTAFORMA) -->
+    <section id="gameOverScreen" class="hidden panel-box p-5 text-center flex flex-col items-center gap-3 animate-pop">
+      <div id="endIcon" class="text-4xl">🏆</div>
+      <h2 id="endTitle" class="text-xl font-extrabold accent-title">SFIDA COMPLETATA!</h2>
+      <p id="endSubtitle" class="text-xs sm:text-sm opacity-85">
+        Hai completato tutte le 12 domande del varco C++!
+      </p>
+
+      <!-- Tabella Riepilogo Dettagliato -->
+      <div class="w-full bg-black/45 rounded-xl p-3.5 border border-white/15 flex flex-col gap-2.5 text-xs sm:text-sm">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Risposte corrette:</span>
+          <span id="endQuestionsCount" class="font-bold">12 / 12</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Tempo impiegato:</span>
+          <span id="endDurationText" class="font-bold text-sky-300">00:00</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Punteggio risposte:</span>
+          <span id="finalBaseScore" class="font-extrabold text-cyan-300">0 pt</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80 text-left">
+            Vite residue (<span id="endHeartsVisual">❤️❤️❤️</span>):
+          </span>
+          <span id="endLivesBonus" class="font-extrabold text-amber-300">3 × 300 = +900 pt</span>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <span class="font-extrabold text-sm sm:text-base uppercase tracking-wide">Punteggio Totale:</span>
+          <span id="finalTotalScore" class="text-2xl font-extrabold text-emerald-400">0 pt</span>
+        </div>
+      </div>
+
+      <!-- Stato registrazione risultati su Render/Neon -->
+      <p id="saveStatus" class="text-xs font-bold px-3 py-2 rounded-lg bg-white/5 border border-white/10 w-full">
+        In attesa…
+      </p>
+
+      <div class="w-full flex flex-col gap-2 mt-1">
+        <button onclick="startGame()"
+                class="w-full py-3.5 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-400 hover:bg-emerald-300 text-slate-950 shadow-lg active:scale-98 transition">
+          🔄 Rigioca (Nuove 12 Domande)
+        </button>
+        <button onclick="backToStartScreen()"
+                class="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white/10 hover:bg-white/15 border border-white/15 transition">
+          📖 Torna alla Guida Iniziale
+        </button>
+        <a href="../index.html"
+           class="w-full py-2 text-xs opacity-75 hover:opacity-100 underline transition">
+          Torna alla pagina di accesso
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * =========================================================================
+     * CONFIGURAZIONE PIATTAFORMA DIDATTICA & AUTENTICAZIONE
+     * =========================================================================
+     */
+    const API = window.APP_CONFIG?.API_BASE?.replace(/\/$/, "");
+    const token = sessionStorage.getItem("studentGameToken");
+    let studentName = "Studente";
+
+    /**
+     * =========================================================================
+     * STATO GLOBALE DEL GIOCO (PARTITA STANDARD: 12 DOMANDE = 3 LIVELLI x 4)
+     * =========================================================================
+     */
+    const TOTAL_QUESTIONS = 12;
+    const QUESTIONS_PER_LEVEL = 4;
+    const POINTS_PER_CORRECT = 100;
+    const BONUS_PER_LIFE = 300;
+
+    const state = {
+      theme: 'cyber',         // 'cyber' | 'arcade' | 'glass'
+      isPlaying: false,
+      baseScore: 0,           // Punti ottenuti dalle risposte esatte
+      lives: 3,
+      round: 1,               // Da 1 a 12
+      correctAnswers: 0,      // Numero totale di risposte corrette
+      deck: [],               // Mazzo pre-generato di 12 sfide uniche (4 per livello)
+      timerEnabled: false,
+      timerSeconds: 18,
+      timerRemaining: 18,
+      timerInterval: null,
+      startedAt: 0,           // Timestamp inizio partita per calcolo durationSeconds
+      elapsedInterval: null,  // Timer cronometro complessivo partita
+      answered: false,
+      currentChallenge: null
+    };
+
+    const formatTime = seconds =>
+      String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0");
+
+    const elapsedSeconds = () => Math.max(0, Math.floor((Date.now() - state.startedAt) / 1000));
+
+    /**
+     * =========================================================================
+     * GESTIONE TEMI GRAFICI (3 VERSIONI SELEZIONABILI)
+     * =========================================================================
+     */
+    function setTheme(themeName) {
+      state.theme = themeName;
+      document.body.className = `theme-${themeName} flex flex-col items-center justify-start px-3 py-3 sm:py-6`;
+
+      ['cyber', 'arcade', 'glass'].forEach(t => {
+        const btn = document.getElementById(`btn-theme-${t}`);
+        if (t === themeName) {
+          btn.classList.add('theme-pill-active');
+        } else {
+          btn.classList.remove('theme-pill-active');
+        }
+      });
+
+      const mainTitle = document.getElementById('mainTitle');
+      if (themeName === 'arcade') {
+        mainTitle.classList.add('arcade-font', 'text-xs', 'sm:text-sm');
+        mainTitle.classList.remove('text-base', 'sm:text-lg');
+      } else {
+        mainTitle.classList.remove('arcade-font', 'text-xs', 'sm:text-sm');
+        mainTitle.classList.add('text-base', 'sm:text-lg');
+      }
+    }
+
+    /**
+     * =========================================================================
+     * GENERATORE PROCEDURALE DI SFIDE C++ (LIVELLI 1, 2, 3)
+     * =========================================================================
+     */
+    const avatars = ['🤖', '🧑‍🚀', '🕵️', '👾', '🧙‍♂️', '🦊', '👩‍💻', '🦾', '🛸', '🥷'];
+    const visitorNames = [
+      'Unità Alpha-7', 'Corriere Dati', 'Agente K', 'Cittadino Neo-Milano',
+      'Viaggiatore #404', 'Sviluppatore Junior', 'Android Zeta', 'Ospite VIP?',
+      'Hacker Etico', 'Sentinella Root'
+    ];
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildStandardDeck() {
+      const level1Pool = [
+        () => {
+          const varName = pickRandom(['eta', 'anni', 'age']);
+          const sogliaSenior = pickRandom([60, 65, 70]);
+          const sogliaAdulto = pickRandom([16, 18, 21]);
+          const val = pickRandom([sogliaAdulto - 3, sogliaAdulto - 1, sogliaAdulto, sogliaAdulto + 4, sogliaSenior, sogliaSenior + 5]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 1,
+            [{ type: 'int', name: varName, val }],
+            [
+              {
+                keyword: 'if',
+                condition: `${varName} >= ${sogliaSenior}`,
+                action: 'Ingresso Senior Gratuito',
+                icon: '🎟️',
+                evalFn: () => val >= sogliaSenior,
+                stepText: `${varName} >= ${sogliaSenior} (${val} >= ${sogliaSenior}) è ${val >= sogliaSenior ? 'VERO (true)' : 'FALSO (false)'}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${varName} >= ${sogliaAdulto}`,
+                action: 'Ingresso Standard',
+                icon: '✅',
+                evalFn: () => val >= sogliaAdulto,
+                stepText: `${varName} >= ${sogliaAdulto} (${val} >= ${sogliaAdulto}) è ${val >= sogliaAdulto ? 'VERO (true)' : 'FALSO (false)'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Accesso Negato (Minorenne)',
+                icon: '⛔',
+                evalFn: () => true,
+                stepText: 'Nessuna condizione precedente era vera, quindi si entra nel ramo else.'
+              }
+            ]
+          );
+        },
+        () => {
+          const varName = pickRandom(['batteria', 'carica', 'percentuale']);
+          const sogliaMax = pickRandom([90, 95, 100]);
+          const sogliaMin = pickRandom([15, 20, 25]);
+          const val = pickRandom([sogliaMin - 5, sogliaMin, sogliaMin + 1, 55, sogliaMax, 100]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 1,
+            [{ type: 'int', name: varName, val }],
+            [
+              {
+                keyword: 'if',
+                condition: `${varName} >= ${sogliaMax}`,
+                action: 'Carica Ottimale',
+                icon: '🔋',
+                evalFn: () => val >= sogliaMax,
+                stepText: `${varName} >= ${sogliaMax} (${val} >= ${sogliaMax}) è ${val >= sogliaMax ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${varName} > ${sogliaMin}`,
+                action: 'Modalità Normale',
+                icon: '⚡',
+                evalFn: () => val > sogliaMin,
+                stepText: `${varName} > ${sogliaMin} (${val} > ${sogliaMin}) è ${val > sogliaMin ? 'VERO' : 'FALSO'} (nota: > esclude il valore esatto ${sogliaMin}!).`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Risparmio Energetico',
+                icon: '🪫',
+                evalFn: () => true,
+                stepText: `Entrambe le condizioni sopra sono false (${val} <= ${sogliaMin}), si esegue else.`
+              }
+            ]
+          );
+        },
+        () => {
+          const varName = pickRandom(['livello', 'ruolo', 'stato', 'gradoNum']);
+          const valOspite = pickRandom([0, -1]);
+          const valAdmin = pickRandom([5, 9, 10]);
+          const val = pickRandom([valOspite, 1, 2, valAdmin]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 1,
+            [{ type: 'int', name: varName, val }],
+            [
+              {
+                keyword: 'if',
+                condition: `${varName} == ${valAdmin}`,
+                action: 'Pannello Supervisore',
+                icon: '🛡️',
+                evalFn: () => val === valAdmin,
+                stepText: `${varName} == ${valAdmin} (${val} == ${valAdmin}) è ${val === valAdmin ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${varName} != ${valOspite}`,
+                action: 'Profilo Attivo',
+                icon: '🟢',
+                evalFn: () => val !== valOspite,
+                stepText: `${varName} != ${valOspite} (${val} diverso da ${valOspite}) è ${val !== valOspite ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Account Ospite',
+                icon: '👤',
+                evalFn: () => true,
+                stepText: `Poiché ${varName} == ${valOspite}, sia == ${valAdmin} che != ${valOspite} sono false: si va nell'else.`
+              }
+            ]
+          );
+        },
+        () => {
+          const varName = pickRandom(['grado', 'fascia', 'settore', 'classe']);
+          const cTop = pickRandom(['A', 'S']);
+          const cStop = pickRandom(['F', 'Z', 'X']);
+          const val = pickRandom([cTop, 'B', 'C', cStop]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 1,
+            [{ type: 'char', name: varName, val: `'${val}'` }],
+            [
+              {
+                keyword: 'if',
+                condition: `${varName} == '${cTop}'`,
+                action: 'Accesso Top Secret',
+                icon: '🔑',
+                evalFn: () => val === cTop,
+                stepText: `${varName} == '${cTop}' ('${val}' == '${cTop}') è ${val === cTop ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${varName} != '${cStop}'`,
+                action: 'Accesso Autorizzato',
+                icon: '🪪',
+                evalFn: () => val !== cStop,
+                stepText: `${varName} != '${cStop}' ('${val}' diverso da '${cStop}') è ${val !== cStop ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Respinto al Varco',
+                icon: '🚫',
+                evalFn: () => true,
+                stepText: `${varName} vale '${cStop}', quindi sia == '${cTop}' che != '${cStop}' sono false: si esegue else.`
+              }
+            ]
+          );
+        }
+      ];
+
+      const level2Pool = [
+        () => {
+          const vBool = pickRandom(['vip', 'abbonato', 'premium']);
+          const vNum = pickRandom(['crediti', 'monete', 'gemme']);
+          const soglia = pickRandom([30, 50, 75, 100]);
+          const bVal = pickRandom([true, false]);
+          const nVal = pickRandom([soglia - 20, soglia, soglia + 25]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 2,
+            [
+              { type: 'bool', name: vBool, val: bVal },
+              { type: 'int', name: vNum, val: nVal }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `${vBool} == true && ${vNum} >= ${soglia}`,
+                action: 'Area Platinum',
+                icon: '👑',
+                evalFn: () => bVal === true && nVal >= soglia,
+                stepText: `Con && servono ENTRAMBE vere: ${vBool} è ${bVal} e ${vNum} >= ${soglia} è ${nVal >= soglia}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${vBool} == true || ${vNum} >= ${soglia}`,
+                action: 'Area Gold',
+                icon: '⭐',
+                evalFn: () => bVal === true || nVal >= soglia,
+                stepText: `Con || basta ALMENO UNA vera: ${vBool} (${bVal}) o ${vNum} >= ${soglia} (${nVal >= soglia}).`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Sala d\'Attesa',
+                icon: '🪑',
+                evalFn: () => true,
+                stepText: `Né ${vBool} è true né ${vNum} >= ${soglia}, quindi si cade nell'else.`
+              }
+            ]
+          );
+        },
+        () => {
+          const vTemp = pickRandom(['temp', 'gradi', 'calore']);
+          const vBool = pickRandom(['pioggia', 'vento', 'nebbia']);
+          const sogliaAlta = pickRandom([28, 30, 35]);
+          const sogliaBassa = pickRandom([15, 18, 20]);
+          const tVal = pickRandom([sogliaBassa - 3, 22, sogliaAlta, sogliaAlta + 4]);
+          const bVal = pickRandom([true, false]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 2,
+            [
+              { type: 'int', name: vTemp, val: tVal },
+              { type: 'bool', name: vBool, val: bVal }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `${vTemp} > ${sogliaAlta} && !${vBool}`,
+                action: 'Allerta Caldo Secco',
+                icon: '☀️',
+                evalFn: () => tVal > sogliaAlta && !bVal,
+                stepText: `${vTemp} > ${sogliaAlta} è ${tVal > sogliaAlta}, !${vBool} è ${!bVal}. Con && devono essere entrambe vere.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${vBool} || ${vTemp} < ${sogliaBassa}`,
+                action: 'Equipaggiamento Meteo',
+                icon: '☔',
+                evalFn: () => bVal || tVal < sogliaBassa,
+                stepText: `${vBool} (${bVal}) || ${vTemp} < ${sogliaBassa} (${tVal < sogliaBassa}) è ${(bVal || tVal < sogliaBassa) ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Clima Ideale',
+                icon: '🌤️',
+                evalFn: () => true,
+                stepText: 'Nessuna allerta attiva: si esegue il ramo else.'
+              }
+            ]
+          );
+        },
+        () => {
+          const vCode = pickRandom(['codice', 'pin', 'chiave']);
+          const vAdmin = pickRandom(['admin', 'master', 'root']);
+          const pinSegreto = pickRandom([1234, 4321, 7777, 2026]);
+          const cVal = pickRandom([pinSegreto, randInt(1000, 9000), 0]);
+          const aVal = pickRandom([true, false]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 2,
+            [
+              { type: 'int', name: vCode, val: cVal },
+              { type: 'bool', name: vAdmin, val: aVal }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `${vAdmin} || ${vCode} == ${pinSegreto}`,
+                action: 'Sblocco Caveau',
+                icon: '🔓',
+                evalFn: () => aVal || cVal === pinSegreto,
+                stepText: `Operatore OR (||): ${vAdmin} è ${aVal}, ${vCode} == ${pinSegreto} è ${cVal === pinSegreto}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${vCode} != 0`,
+                action: 'Accesso Limitato',
+                icon: '🔐',
+                evalFn: () => cVal !== 0,
+                stepText: `La prima era falsa, ma ${vCode} != 0 (${cVal} != 0) è ${cVal !== 0 ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Allarme Intruso',
+                icon: '🚨',
+                evalFn: () => true,
+                stepText: `Tutte le condizioni sono false (${vAdmin}=false e ${vCode}=0).`
+              }
+            ]
+          );
+        },
+        () => {
+          const vOre = pickRandom(['ore', 'turno', 'minuti']);
+          const vEn = pickRandom(['energia', 'stamina', 'forza']);
+          const sogliaOre = pickRandom([6, 8, 10]);
+          const sogliaEn = pickRandom([40, 50, 60]);
+          const oVal = pickRandom([2, sogliaOre, sogliaOre + 3]);
+          const eVal = pickRandom([sogliaEn - 20, sogliaEn, sogliaEn + 30]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 2,
+            [
+              { type: 'int', name: vOre, val: oVal },
+              { type: 'int', name: vEn, val: eVal }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `${vOre} >= ${sogliaOre} && ${vEn} < ${sogliaEn}`,
+                action: 'Turno Finito: Riposo!',
+                icon: '🛌',
+                evalFn: () => oVal >= sogliaOre && eVal < sogliaEn,
+                stepText: `${vOre} >= ${sogliaOre} (${oVal >= sogliaOre}) && ${vEn} < ${sogliaEn} (${eVal < sogliaEn}) è ${(oVal >= sogliaOre && eVal < sogliaEn) ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `${vEn} >= ${sogliaEn} && ${vOre} < ${sogliaOre + 2}`,
+                action: 'Continua Missione',
+                icon: '🚀',
+                evalFn: () => eVal >= sogliaEn && oVal < (sogliaOre + 2),
+                stepText: `${vEn} >= ${sogliaEn} (${eVal >= sogliaEn}) && ${vOre} < ${sogliaOre + 2} (${oVal < sogliaOre + 2}) è ${(eVal >= sogliaEn && oVal < sogliaOre + 2) ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Ricarica Rapida',
+                icon: '🔌',
+                evalFn: () => true,
+                stepText: 'Entrambe le combinazioni AND precedenti sono false: si entra in else.'
+              }
+            ]
+          );
+        }
+      ];
+
+      const level3Pool = [
+        () => {
+          const vScore = pickRandom(['punti', 'score', 'voto']);
+          const vBonus = pickRandom(['bonus', 'extra', 'jolly']);
+          const sogliaPass = pickRandom([60, 65, 70]);
+          const sogliaLode = pickRandom([90, 95, 100]);
+          const sVal = pickRandom([sogliaLode, sogliaLode + 2, sogliaPass, sogliaPass - 15]);
+          const bVal = pickRandom([true, false]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 3,
+            [
+              { type: 'int', name: vScore, val: sVal },
+              { type: 'bool', name: vBonus, val: bVal }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `${vScore} >= ${sogliaPass} && !${vBonus}`,
+                action: 'Promosso Base',
+                icon: '📘',
+                evalFn: () => sVal >= sogliaPass && !bVal,
+                stepText: `ATTENZIONE ALL'ORDINE: anche se ${vScore} (${sVal}) fosse >= ${sogliaLode}, questo primo if viene valutato per primo! ${vScore} >= ${sogliaPass} (${sVal >= sogliaPass}) && !${vBonus} (${!bVal}).`
+              },
+              {
+                keyword: 'else if',
+                condition: `${vScore} >= ${sogliaLode} || ${vBonus}`,
+                action: 'Promosso con Lode',
+                icon: '🏆',
+                evalFn: () => sVal >= sogliaLode || bVal,
+                stepText: `Il primo if era falso, quindi si valuta questo else if: ${vScore} >= ${sogliaLode} (${sVal >= sogliaLode}) || ${vBonus} (${bVal}).`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Esame da Ripetere',
+                icon: '❌',
+                evalFn: () => true,
+                stepText: 'Sia il primo if che l\'else if sono falsi: si esegue else.'
+              }
+            ]
+          );
+        },
+        () => {
+          const [n1, n2, n3] = pickRandom([
+            ['a', 'b', 'c'],
+            ['x', 'y', 'z'],
+            ['f1', 'f2', 'f3']
+          ]);
+          const v1 = true;
+          const v2 = false;
+          const v3 = pickRandom([true, false]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 3,
+            [
+              { type: 'bool', name: n1, val: v1 },
+              { type: 'bool', name: n2, val: v2 },
+              { type: 'bool', name: n3, val: v3 }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `${n1} || ${n2} && ${n3}`,
+                action: 'Ramo Precedenza (true)',
+                icon: '🧠',
+                evalFn: () => v1 || (v2 && v3),
+                stepText: `In C++ && ha precedenza su ||! Si valuta come: ${n1} || (${n2} && ${n3}) -> true || (false && ${v3}) -> sempre VERO!`
+              },
+              {
+                keyword: 'else if',
+                condition: `!(${n1} || ${n2})`,
+                action: 'Ramo Negato',
+                icon: '🔄',
+                evalFn: () => !(v1 || v2),
+                stepText: 'Non viene mai raggiunto perché il primo if è vero.'
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Ramo Fallback',
+                icon: '🛡️',
+                evalFn: () => true,
+                stepText: 'Non viene raggiunto.'
+              }
+            ]
+          );
+        },
+        () => {
+          const vNum = pickRandom(['num', 'valore', 'id']);
+          const vLock = pickRandom(['bloccato', 'ospite', 'sospeso']);
+          const div = pickRandom([3, 4]);
+          const nVal = pickRandom([div, div * 2, div * 3, 5, 7]);
+          const lVal = pickRandom([true, false]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 3,
+            [
+              { type: 'int', name: vNum, val: nVal },
+              { type: 'bool', name: vLock, val: lVal }
+            ],
+            [
+              {
+                keyword: 'if',
+                condition: `!${vLock} && ${vNum} % ${div} == 0`,
+                action: `Multiplo di ${div} Sbloccato`,
+                icon: '🎯',
+                evalFn: () => !lVal && (nVal % div === 0),
+                stepText: `!${vLock} è ${!lVal}, e ${vNum} % ${div} == 0 (${nVal} % ${div} = ${nVal % div}) è ${nVal % div === 0}.`
+              },
+              {
+                keyword: 'else if',
+                condition: `!(${vNum} % 2 != 0)`,
+                action: 'Numero Pari (Doppia Negazione)',
+                icon: '⚖️',
+                evalFn: () => !(nVal % 2 !== 0),
+                stepText: `!(${vNum} % 2 != 0) significa "non è dispari", cioè è PARI! Per ${vNum}=${nVal} è ${!(nVal % 2 !== 0) ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: 'Scarto Generale',
+                icon: '🗑️',
+                evalFn: () => true,
+                stepText: 'Entrambe le condizioni precedenti erano false.'
+              }
+            ]
+          );
+        },
+        () => {
+          const vVar = pickRandom(['x', 'n', 'cod']);
+          const div2 = pickRandom([3, 5]);
+          const soglia = pickRandom([15, 20, 25]);
+          const val = pickRandom([div2 * 2, div2 * 3, soglia + 2, soglia + 5, 7, 11]);
+          return finalizeChallenge(pickRandom(avatars), pickRandom(visitorNames), 3,
+            [{ type: 'int', name: vVar, val }],
+            [
+              {
+                keyword: 'if',
+                condition: `${vVar} % 2 == 0 && ${vVar} % ${div2} == 0`,
+                action: `Multiplo di ${2 * div2}`,
+                icon: '🔟',
+                evalFn: () => (val % 2 === 0) && (val % div2 === 0),
+                stepText: `${vVar} % 2 == 0 (${val % 2 === 0}) && ${vVar} % ${div2} == 0 (${val % div2 === 0}).`
+              },
+              {
+                keyword: 'else if',
+                condition: `${vVar} % 2 == 0 || ${vVar} > ${soglia}`,
+                action: `Pari oppure > ${soglia}`,
+                icon: '✨',
+                evalFn: () => (val % 2 === 0) || (val > soglia),
+                stepText: `${vVar} % 2 == 0 (${val % 2 === 0}) || ${vVar} > ${soglia} (${val > soglia}) è ${((val % 2 === 0) || (val > soglia)) ? 'VERO' : 'FALSO'}.`
+              },
+              {
+                keyword: 'else',
+                condition: null,
+                action: `Dispari <= ${soglia}`,
+                icon: '📦',
+                evalFn: () => true,
+                stepText: `Per ${vVar}=${val}, sia il primo if che l'else if sono falsi.`
+              }
+            ]
+          );
+        }
+      ];
+
+      const lv1Challenges = shuffleArray(level1Pool).map(fn => fn());
+      const lv2Challenges = shuffleArray(level2Pool).map(fn => fn());
+      const lv3Challenges = shuffleArray(level3Pool).map(fn => fn());
+
+      return [...lv1Challenges, ...lv2Challenges, ...lv3Challenges];
+    }
+
+    function finalizeChallenge(avatar, name, level, vars, branches) {
+      let correctIndex = branches.findIndex(b => b.evalFn());
+      if (correctIndex === -1) correctIndex = branches.length - 1;
+
+      const traceLines = [];
+      for (let i = 0; i <= correctIndex; i++) {
+        const b = branches[i];
+        const prefix = b.condition ? `${b.keyword} (${b.condition})` : 'else';
+        const outcome = (i === correctIndex) ? '✅ ESEGUITO!' : '❌ Saltato (false)';
+        traceLines.push(`• <strong>${escapeHtml(prefix)}</strong> → ${outcome}<br><span class="opacity-80">${b.stepText}</span>`);
+      }
+      if (correctIndex < branches.length - 1) {
+        traceLines.push(`• <em>I rami successivi vengono ignorati perché in una catena if / else if se ne esegue solo UNO!</em>`);
+      }
+
+      return {
+        avatar,
+        name,
+        level,
+        vars,
+        branches,
+        correctIndex,
+        explanationHtml: traceLines.join('<br>')
+      };
+    }
+
+    /**
+     * =========================================================================
+     * RENDERING INTERFACCIA E COLORAZIONE SINTASSI C++
+     * =========================================================================
+     */
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function highlightCppCondition(cond) {
+      if (!cond) return '';
+      let escaped = escapeHtml(cond);
+      escaped = escaped.replace(/('[^']')/g, '<span class="cpp-str">$1</span>');
+      escaped = escaped.replace(/(&amp;&amp;|\|\||==|!=|&lt;=|&gt;=|&lt;|&gt;|!|%)/g, '<span class="cpp-op">$1</span>');
+      escaped = escaped.replace(/\b(true|false)\b/g, '<span class="cpp-bool">$1</span>');
+      escaped = escaped.replace(/\b(\d+)\b/g, '<span class="cpp-num">$1</span>');
+      return escaped;
+    }
+
+    function renderChallenge() {
+      state.answered = false;
+      const challenge = state.deck[state.round - 1];
+      state.currentChallenge = challenge;
+
+      const currentLevel = Math.ceil(state.round / QUESTIONS_PER_LEVEL);
+
+      document.getElementById('roundNumber').textContent = state.round;
+      document.getElementById('visitorAvatar').textContent = challenge.avatar;
+      document.getElementById('visitorName').textContent = challenge.name;
+      document.getElementById('difficultyTag').textContent = `Livello ${currentLevel}/3`;
+      document.getElementById('progressBadge').textContent = `Lv.${currentLevel}/3 • ${state.round}/${TOTAL_QUESTIONS}`;
+
+      const visitorCard = document.getElementById('visitorCard');
+      visitorCard.classList.remove('animate-pop');
+      void visitorCard.offsetWidth;
+      visitorCard.classList.add('animate-pop');
+
+      const varsContainer = document.getElementById('variablesContainer');
+      varsContainer.innerHTML = challenge.vars.map(v => {
+        let valClass = 'cpp-num';
+        if (v.type === 'bool') valClass = 'cpp-bool';
+        if (v.type === 'char') valClass = 'cpp-str';
+        return `<div><span class="cpp-type">${v.type}</span> <span class="cpp-var">${v.name}</span> = <span class="${valClass}">${v.val}</span>;</div>`;
+      }).join('');
+
+      const branchesContainer = document.getElementById('branchesContainer');
+      branchesContainer.innerHTML = challenge.branches.map((b, idx) => {
+        const headerCode = b.condition
+          ? `<span class="cpp-kw">${b.keyword}</span> (${highlightCppCondition(b.condition)})`
+          : `<span class="cpp-kw">else</span>`;
+
+        return `
+          <button id="branch-btn-${idx}" onclick="handleBranchChoice(${idx})"
+                  class="branch-btn w-full text-left p-3 flex flex-col gap-1.5 cursor-pointer">
+            <div class="code-font text-xs sm:text-sm tracking-tight">
+              ${headerCode} <span class="opacity-60">{</span>
+            </div>
+            <div class="pl-3 flex items-center justify-between gap-2">
+              <span class="font-bold text-sm sm:text-base flex items-center gap-2">
+                <span>${b.icon}</span>
+                <span>${escapeHtml(b.action)}</span>
+              </span>
+              <span class="text-[10px] uppercase tracking-wider opacity-60 font-bold px-2 py-0.5 rounded bg-white/5">
+                Scegli
+              </span>
+            </div>
+            <div class="code-font text-xs opacity-60">}</div>
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('feedbackPanel').classList.add('hidden');
+      resetAndStartTimer();
+    }
+
+    /**
+     * =========================================================================
+     * GESTIONE RISPOSTA UTENTE E FEEDBACK
+     * =========================================================================
+     */
+    function handleBranchChoice(chosenIdx, isTimeout = false) {
+      if (state.answered) return;
+      state.answered = true;
+      stopTimer();
+
+      const challenge = state.currentChallenge;
+      const isCorrect = !isTimeout && (chosenIdx === challenge.correctIndex);
+
+      challenge.branches.forEach((_, idx) => {
+        const btn = document.getElementById(`branch-btn-${idx}`);
+        btn.disabled = true;
+
+        if (idx === challenge.correctIndex) {
+          btn.classList.add('branch-correct');
+        } else if (idx === chosenIdx && !isCorrect) {
+          btn.classList.add('branch-wrong');
+        } else {
+          btn.classList.add('branch-dimmed');
+        }
+      });
+
+      const feedbackPanel = document.getElementById('feedbackPanel');
+      const feedbackIcon = document.getElementById('feedbackIcon');
+      const feedbackTitle = document.getElementById('feedbackTitle');
+      const feedbackExplanation = document.getElementById('feedbackExplanation');
+
+      if (isCorrect) {
+        state.correctAnswers += 1;
+        state.baseScore += POINTS_PER_CORRECT;
+
+        feedbackPanel.style.borderColor = '#10b981';
+        feedbackIcon.textContent = '✅';
+        feedbackTitle.textContent = `Perfetto! (+${POINTS_PER_CORRECT} pt)`;
+        feedbackTitle.className = 'font-extrabold text-sm sm:text-base text-emerald-400';
+      } else {
+        state.lives = Math.max(0, state.lives - 1);
+
+        feedbackPanel.style.borderColor = '#ef4444';
+        feedbackIcon.textContent = isTimeout ? '⏰' : '❌';
+        feedbackTitle.textContent = isTimeout
+          ? 'Tempo Scaduto! (-1 Vita)'
+          : 'Ramo Sbagliato! (-1 Vita)';
+        feedbackTitle.className = 'font-extrabold text-sm sm:text-base text-rose-400';
+      }
+
+      feedbackExplanation.innerHTML = challenge.explanationHtml;
+      feedbackPanel.classList.remove('hidden');
+      updateHUD();
+
+      const isGameFinished = (state.lives <= 0) || (state.round >= TOTAL_QUESTIONS);
+      const nextBtn = document.getElementById('nextBtn');
+
+      if (isGameFinished) {
+        nextBtn.textContent = 'Vedi Riepilogo e Salva Risultato ➜';
+        nextBtn.className = state.lives > 0
+          ? 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg active:scale-98 transition'
+          : 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-rose-500 text-white shadow-lg active:scale-98 transition';
+      } else {
+        const nextLevel = Math.ceil((state.round + 1) / QUESTIONS_PER_LEVEL);
+        const currentLevel = Math.ceil(state.round / QUESTIONS_PER_LEVEL);
+        nextBtn.textContent = (nextLevel > currentLevel)
+          ? `Avanza al Livello ${nextLevel}/3 ➜`
+          : `Prossima Domanda (${state.round + 1}/${TOTAL_QUESTIONS}) ➜`;
+        nextBtn.className = 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg active:scale-98 transition';
+      }
+
+      setTimeout(() => {
+        feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
+
+    function nextRound() {
+      if (state.lives <= 0 || state.round >= TOTAL_QUESTIONS) {
+        showEndScreen();
+        return;
+      }
+      state.round += 1;
+      renderChallenge();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateHUD() {
+      const fullHearts = Math.max(0, state.lives);
+      const emptyHearts = Math.max(0, 3 - fullHearts);
+      document.getElementById('livesDisplay').textContent = '❤️'.repeat(fullHearts) + '🖤'.repeat(emptyHearts);
+      document.getElementById('scoreDisplay').textContent = state.baseScore;
+    }
+
+    /**
+     * =========================================================================
+     * GESTIONE TIMER OPZIONALE E FLUSSO SCHERMATE (START -> GAME -> END)
+     * =========================================================================
+     */
+    function toggleTimerMode() {
+      state.timerEnabled = !state.timerEnabled;
+      const label = document.getElementById('timerLabel');
+      const barContainer = document.getElementById('timerBarContainer');
+
+      if (state.timerEnabled) {
+        label.textContent = 'Timer: ON';
+        if (state.isPlaying) {
+          barContainer.classList.remove('hidden');
+          if (!state.answered) resetAndStartTimer();
+        }
+      } else {
+        label.textContent = 'Timer: OFF';
+        barContainer.classList.add('hidden');
+        stopTimer();
+      }
+    }
+
+    function resetAndStartTimer() {
+      stopTimer();
+      if (!state.timerEnabled || !state.isPlaying) return;
+
+      state.timerRemaining = state.timerSeconds;
+      const fill = document.getElementById('timerBarFill');
+      fill.style.width = '100%';
+
+      state.timerInterval = setInterval(() => {
+        state.timerRemaining -= 0.1;
+        const pct = Math.max(0, (state.timerRemaining / state.timerSeconds) * 100);
+        fill.style.width = `${pct}%`;
+
+        if (state.timerRemaining <= 0) {
+          stopTimer();
+          handleBranchChoice(-1, true);
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function stopElapsedClock() {
+      if (state.elapsedInterval) {
+        clearInterval(state.elapsedInterval);
+        state.elapsedInterval = null;
+      }
+    }
+
+    function startGame() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = true;
+      state.baseScore = 0;
+      state.lives = 3;
+      state.round = 1;
+      state.correctAnswers = 0;
+      state.startedAt = Date.now();
+      state.deck = buildStandardDeck();
+
+      document.getElementById('elapsedDisplay').textContent = '00:00';
+      state.elapsedInterval = setInterval(() => {
+        document.getElementById('elapsedDisplay').textContent = formatTime(elapsedSeconds());
+      }, 500);
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('hudSection').classList.remove('hidden');
+      document.getElementById('gameScreen').classList.remove('hidden');
+
+      if (state.timerEnabled) {
+        document.getElementById('timerBarContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('timerBarContainer').classList.add('hidden');
+      }
+
+      updateHUD();
+      renderChallenge();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToStartScreen() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = false;
+      document.getElementById('hudSection').classList.add('hidden');
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('timerBarContainer').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function showEndScreen() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = false;
+
+      const duration = elapsedSeconds();
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('timerBarContainer').classList.add('hidden');
+
+      const completedAll = (state.lives > 0 && state.round >= TOTAL_QUESTIONS);
+      const livesBonus = state.lives * BONUS_PER_LIFE;
+      const totalScore = state.baseScore + livesBonus;
+
+      document.getElementById('endIcon').textContent = completedAll ? '🏆' : '🚨';
+      document.getElementById('endTitle').textContent = completedAll
+        ? 'SFIDA COMPLETATA!'
+        : 'VITE ESAURITE!';
+      document.getElementById('endSubtitle').textContent = completedAll
+        ? `Ottimo lavoro ${studentName}! Hai superato tutti e 3 i livelli di controllo C++.`
+        : `${studentName}, hai esaurito le vite al varco. Riprova per battere tutte le 12 domande!`;
+
+      document.getElementById('endQuestionsCount').textContent = `${state.correctAnswers} / ${TOTAL_QUESTIONS}`;
+      document.getElementById('endDurationText').textContent = formatTime(duration);
+      document.getElementById('finalBaseScore').textContent = `${state.baseScore} pt`;
+
+      const fullHearts = Math.max(0, state.lives);
+      const emptyHearts = Math.max(0, 3 - fullHearts);
+      document.getElementById('endHeartsVisual').textContent = '❤️'.repeat(fullHearts) + '🖤'.repeat(emptyHearts);
+      document.getElementById('endLivesBonus').textContent = `${state.lives} × ${BONUS_PER_LIFE} = +${livesBonus} pt`;
+      document.getElementById('finalTotalScore').textContent = `${totalScore} pt`;
+
+      const saveStatus = document.getElementById('saveStatus');
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (!completedAll) {
+        saveStatus.textContent = '⚠️ Partita non completata: completa tutte e 12 le domande per registrare il risultato.';
+        return;
+      }
+
+      saveStatus.textContent = 'Salvataggio dei risultati…';
+      try {
+        const response = await fetch(API + '/api/games/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            durationSeconds: duration,
+            correctAnswers: state.correctAnswers,
+            totalQuestions: TOTAL_QUESTIONS,
+            score: totalScore
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Salvataggio non riuscito.');
+        saveStatus.textContent = '✅ Risultato salvato correttamente nella piattaforma.';
+      } catch (error) {
+        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l\'insegnante.';
+        console.error('Errore salvataggio gatekeeper:', error);
+      }
+    }
+
+    /**
+     * =========================================================================
+     * INIZIALIZZAZIONE E VERIFICA SESSIONE STUDENTE
+     * =========================================================================
+     */
+    async function initPlatformSession() {
+      setTheme('cyber');
+      const startBtn = document.getElementById('startBtn');
+      const banner = document.getElementById('studentBanner');
+
+      if (!token || !API) {
+        banner.textContent = 'Accesso non disponibile';
+        document.getElementById('welcomeHeading').textContent = 'Torna alla pagina di accesso';
+        startBtn.disabled = true;
+        return;
+      }
+
+      try {
+        const response = await fetch(API + '/api/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error('Sessione non valida.');
+        studentName = data.student || 'Studente';
+        banner.textContent = `👤 ${studentName}`;
+        document.getElementById('welcomeHeading').textContent = `Benvenuto ${studentName}!`;
+      } catch (error) {
+        sessionStorage.removeItem('studentGameToken');
+        location.replace('../index.html');
+      }
+    }
+
+    window.onload = initPlatformSession;
+  </script>
+</body>
+</html>
