@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Memory C++</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="memory.css">
+  <script src="../config.js"></script>
+  <script defer src="memory.js"></script>
+</head>
+<body>
+  <main class="game">
+    <header>
+      <a href="../index.html">← Esci</a>
+      <div>
+        <h1>Memory C++</h1>
+        <p id="welcome">Abbina ogni simbolo alla sua definizione.</p>
+      </div>
+    </header>
+    <section class="stats">
+      <div>Tempo <strong id="timer">00:00</strong></div>
+      <div>Coppie <strong id="pairs">0 / 8</strong></div>
+    </section>
+    <p class="hint">Trova le coppie simbolo-definizione. Dopo ogni coppia rispondi a una domanda Vero/Falso sull'operatore.</p>
+    <section id="board" class="board" aria-label="Carte del Memory"></section>
+    <p id="game-message" aria-live="polite"></p>
+  </main>
+
+  <dialog id="question-dialog">
+    <div class="dialog-card">
+      <small>DOMANDA DI VERIFICA</small>
+      <h2 id="question-text"></h2>
+      <div class="answers">
+        <button type="button" data-answer="true">Vero</button>
+        <button type="button" data-answer="false">Falso</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="result-dialog">
+    <div class="dialog-card">
+      <small>COMPLIMENTI</small>
+      <h2>Hai completato il Memory!</h2>
+      <p id="final-time"></p>
+      <p id="save-status">Salvataggio…</p>
+      <button id="play-again" type="button">Gioca di nuovo</button>
+      <a href="../index.html">Torna all'accesso</a>
+    </div>
+  </dialog>
+</body>
+</html>
