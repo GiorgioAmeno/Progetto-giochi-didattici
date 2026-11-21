@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Karnaugh Hybrid — 3 e 4 Variabili</title>
+<script src="../config.js"></script>
+<style>
+  :root{
+    --cell: clamp(48px, 14vw, 78px);
+    --label: clamp(32px, 8vw, 48px);
+    --gap: 5px;
+  }
+
+  *{
+    box-sizing: border-box;
+  }
+
+  body{
+    margin:0;
+    background:#111;
+    color:#fff;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  .container{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+    padding-bottom:8px;
+    border-bottom:1px solid #2b2b2b;
+    font-size:13px;
+  }
+
+  .exit-link{
+    color:#fff;
+    text-decoration:none;
+    border:1px solid #555;
+    padding:7px 12px;
+    border-radius:999px;
+    font-weight:700;
+    background:#1c1c1c;
+  }
+
+  .exit-link:hover{
+    background:#2a2a2a;
+  }
+
+  .stats-bar{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    margin-bottom:12px;
+  }
+
+  .stat-box{
+    background:#1a1a1a;
+    border:1px solid #333;
+    border-radius:10px;
+    padding:8px 10px;
+    text-align:center;
+  }
+
+  .stat-box small{
+    display:block;
+    font-size:11px;
+    color:#aaa;
+    text-transform:uppercase;
+  }
+
+  .stat-box strong{
+    display:block;
+    font-size:16px;
+    margin-top:2px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  h2,h3{
+    margin: 8px 0 10px;
+  }
+
+  .flex{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    align-items:flex-start;
+  }
+
+  .panel{
+    overflow-x:auto;
+    max-width:100%;
+  }
+
+  button{
+    background:#d8d8d8;
+    color:#111;
+    border:none;
+    padding:10px 14px;
+    margin:5px 5px 5px 0;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.15s;
+    box-shadow:0 2px 0 rgba(0,0,0,.35);
+  }
+
+  button:hover{ background:#efefef; }
+  button:active{ transform:scale(0.97); }
+  button:disabled{ opacity:0.45; cursor:not-allowed; }
+
+  button.primary-btn{
+    background:#4ade80;
+    color:#082012;
+  }
+  button.primary-btn:hover{
+    background:#86efac;
+  }
+
+  table{
+    border-collapse:collapse;
+    font-size:14px;
+    background:#141414;
+  }
+
+  td,th{
+    border:1px solid #555;
+    padding:5px 7px;
+    text-align:center;
+    min-width: 26px;
+  }
+
+  td:last-child, th:last-child{
+    border-left:4px solid #fff;
+  }
+
+  tr:nth-child(6) td,
+  tr:nth-child(10) td,
+  tr:nth-child(14) td{
+    border-top:3px solid #fff;
+  }
+
+  .kmap{
+    display:grid;
+    grid-template-columns: var(--label) repeat(4, var(--cell));
+    grid-template-rows: var(--label) repeat(4, var(--cell));
+    gap: var(--gap);
+    position:relative;
+    width: fit-content;
+    user-select:none;
+  }
+
+  .kmap.vars-3{
+    grid-template-rows: var(--label) repeat(2, var(--cell));
+  }
+
+  .klabel{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    color:#aaa;
+    line-height:1;
+    font-weight:700;
+  }
+
+  .cell{
+    background:#222;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: clamp(18px, 4vw, 28px);
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+    z-index:1;
+  }
+
+  .cell.active{
+    outline:3px solid orange;
+    outline-offset:-2px;
+  }
+
+  .overlay{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:4;
+  }
+
+  .group-piece{
+    position:absolute;
+    box-sizing:border-box;
+    border-style:solid;
+    border-radius:12px;
+    pointer-events:none;
+    background:rgba(255,255,255,0.03);
+  }
+
+  .hidden{ display:none !important; }
+
+  .status{
+    min-height:1.4em;
+    margin-top:8px;
+    font-weight:700;
+  }
+
+  .small{
+    color:#bbb;
+    margin-top:6px;
+    font-size:13px;
+  }
+
+  .result-card{
+    background:#1a1a1a;
+    border:2px solid #4ade80;
+    border-radius:16px;
+    padding:18px;
+    margin-top:14px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <a class="exit-link" href="../index.html">← Esci</a>
+    <span id="welcomeLabel">Verifica sessione…</span>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-box">
+      <small>⏱ Tempo</small>
+      <strong id="timerDisplay">00:00</strong>
+    </div>
+    <div class="stat-box">
+      <small>🗺️ Mappa</small>
+      <strong id="stageDisplay">1 / 2 (3 var)</strong>
+    </div>
+    <div class="stat-box">
+      <small>⭐ Punti</small>
+      <strong id="scoreDisplay">0</strong>
+    </div>
+  </div>
+
+  <h2 id="mainHeading">🎮 Karnaugh Hybrid — Mappa 1 di 2 (3 Variabili: A, B, C)</h2>
+
+  <div id="fase1">
+    <p class="small">Fase 1: Trascrivi i valori Y dalla tabella di verità nella mappa di Karnaugh, poi convalida per passare alla Fase 2.</p>
+    <div class="flex">
+      <div class="panel" id="truthPanel"></div>
+      <div class="panel">
+        <div id="kmap" class="kmap"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button onclick="checkTruth()">✔ Convalida tabella</button>
+      <button id="btnGoPhase2" class="primary-btn" onclick="goPhase2()" disabled>➡ Fase 2</button>
+    </div>
+    <div id="truthStatus" class="status"></div>
+  </div>
+
+  <div id="fase2" class="hidden">
+    <h3>Fase 2 — Scegli la modalità di raggruppamento</h3>
+    <p class="small">Scegli se raggruppare gli 1 (Mintermini) oppure gli 0 (Maxtermini):</p>
+    <button onclick="startPhase3('min')">🔵 Mintermini</button>
+    <button onclick="startPhase3('max')">🟠 Maxtermini</button>
+  </div>
+
+  <div id="fase3" class="hidden">
+    <h3>Fase 3 — Raggruppamenti K-map</h3>
+    <div class="small" id="modeLabel"></div>
+
+    <div class="panel" style="margin-top:8px;">
+      <div id="kmap2" class="kmap"></div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button onclick="prevGroup()">⬅ Gruppo</button>
+      <button onclick="nextGroup()">Gruppo ➡</button>
+      <button onclick="deleteGroup()">🗑 Elimina</button>
+    </div>
+
+    <div>
+      <button onclick="verifyQM()">✔ Verifica con Quine-McCluskey</button>
+      <button id="btnNextMap" class="primary-btn hidden" onclick="goToNextMap()">➡ Passa alla Mappa a 4 Variabili</button>
+      <button onclick="restartCurrentMap()">🔄 Nuova Mappa Corrente</button>
+    </div>
+
+    <div id="qmStatus" class="status"></div>
+    <div class="small" id="qmDetail"></div>
+  </div>
+
+  <div id="finalScreen" class="result-card hidden">
+    <div style="font-size:2.4rem;">🏆</div>
+    <h2>Sfida Karnaugh Completata!</h2>
+    <p id="finalSummary"></p>
+    <p id="saveStatus" class="status">Salvataggio dei risultati…</p>
+    <div style="margin-top:12px;">
+      <button class="primary-btn" onclick="restartFullChallenge()">🔄 Gioca di nuovo (3 + 4 variabili)</button>
+      <a class="exit-link" href="../index.html" style="display:inline-block;margin-left:8px;">Torna all'accesso</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+// =========================================================================
+// INTEGRAZIONE PIATTAFORMA (ACCESSO, TIMER, PUNTEGGIO, SALVATAGGIO)
+// =========================================================================
+const API = window.APP_CONFIG?.API_BASE?.replace(/\/$/, "");
+const token = sessionStorage.getItem("studentGameToken");
+let studentName = "Studente";
+
+const STAGES = [3, 4]; // Mappa 1 = 3 variabili, Mappa 2 = 4 variabili
+let stageIndex = 0;    // 0 -> 3 variabili, 1 -> 4 variabili
+let currentVars = 3;
+let score = 0;
+let wrongAttempts = 0;
+let startedAt = Date.now();
+let timerInterval = null;
+let truthValidated = false;
+let mapSolved = false;
+
+const gray2 = ["00", "01", "11", "10"];
+const gray1 = ["0", "1"];
+
+let truth = [];
+let solution = [];
+let user = [];
+
+let mode = "min";               // "min" = gruppi sugli 1, "max" = gruppi sugli 0
+let groups = [[]];              // gruppi salvati
+let currentGroup = 0;           // indice gruppo attivo
+let selected = new Set();       // selezione attuale del gruppo attivo
+let phase3Cells = [];           // riferimenti DOM celle fase 3
+
+function formatTime(sec){
+  return String(Math.floor(sec / 60)).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0");
+}
+
+function elapsedSeconds(){
+  return Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+}
+
+function updateTopStats(){
+  $("stageDisplay").textContent = `${stageIndex + 1} / 2 (${currentVars} var)`;
+  $("scoreDisplay").textContent = score;
+  $("mainHeading").textContent = currentVars === 3
+    ? "🎮 Karnaugh Hybrid — Mappa 1 di 2 (3 Variabili: A, B, C)"
+    : "🎮 Karnaugh Hybrid — Mappa 2 di 2 (4 Variabili: A, B, C, D)";
+}
+
+function getDims(){
+  return currentVars === 3
+    ? { numRows: 2, numCols: 4, totalCells: 8, rowCodes: gray1, colCodes: gray2, cornerLabel: "A\\BC" }
+    : { numRows: 4, numCols: 4, totalCells: 16, rowCodes: gray2, colCodes: gray2, cornerLabel: "AB\\CD" };
+}
+
+function generateTruth(){
+  const { totalCells } = getDims();
+  truth = [];
+  for(let i = 0; i < totalCells; i++){
+    truth.push({
+      in: i.toString(2).padStart(currentVars, "0"),
+      out: Math.random() > 0.5 ? 1 : 0
+    });
+  }
+}
+
+function drawTruthTable(){
+  let html = "<table>";
+  html += currentVars === 3
+    ? "<tr><th>A</th><th>B</th><th>C</th><th>Y</th></tr>"
+    : "<tr><th>A</th><th>B</th><th>C</th><th>D</th><th>Y</th></tr>";
+
+  truth.forEach(r => {
+    html += "<tr>";
+    r.in.split("").forEach(b => html += `<td>${b}</td>`);
+    html += `<td>${r.out}</td></tr>`;
+  });
+
+  html += "</table>";
+  $("truthPanel").innerHTML = html;
+}
+
+function buildSolution(){
+  const { numCols, totalCells, rowCodes, colCodes } = getDims();
+  solution = Array(totalCells).fill(0);
+  truth.forEach(r => {
+    const rPart = currentVars === 3 ? r.in[0] : (r.in[0] + r.in[1]);
+    const cPart = currentVars === 3 ? (r.in[1] + r.in[2]) : (r.in[2] + r.in[3]);
+    const row = rowCodes.indexOf(rPart);
+    const col = colCodes.indexOf(cPart);
+    solution[row * numCols + col] = r.out;
+  });
+}
+
+function label(text){
+  const d = document.createElement("div");
+  d.className = "klabel";
+  d.textContent = text;
+  return d;
+}
+
+function cellBits(index){
+  const { numCols, rowCodes, colCodes } = getDims();
+  const r = Math.floor(index / numCols);
+  const c = index % numCols;
+  return rowCodes[r] + colCodes[c];
+}
+
+function maskFromCells(cells){
+  let mask = 0;
+  for(const i of cells) mask |= (1 << i);
+  return mask;
+}
+
+function uniqueSorted(arr){
+  return [...new Set(arr)].sort((a,b) => a-b);
+}
+
+function buildKMap(containerId, phase){
+  const container = $(containerId);
+  container.innerHTML = "";
+  container.classList.toggle("vars-3", currentVars === 3);
+
+  const { numRows, numCols, rowCodes, colCodes, cornerLabel } = getDims();
+  const cellRefs = [];
+
+  container.appendChild(label(cornerLabel));
+  colCodes.forEach(g => container.appendChild(label(g)));
+
+  for(let r = 0; r < numRows; r++){
+    container.appendChild(label(rowCodes[r]));
+    for(let c = 0; c < numCols; c++){
+      const i = r * numCols + c;
+      const d = document.createElement("div");
+      d.className = "cell";
+      d.textContent = user[i];
+
+      if(phase === 1){
+        d.onclick = () => {
+          user[i] = 1 - user[i];
+          d.textContent = user[i];
+          truthValidated = false;
+          $("btnGoPhase2").disabled = true;
+        };
+      }else if(phase === 3){
+        d.onclick = () => {
+          togglePhase3Cell(i);
+        };
+        if(selected.has(i)) d.classList.add("active");
+      }
+
+      container.appendChild(d);
+      cellRefs[i] = d;
+    }
+  }
+
+  return cellRefs;
+}
+
+function drawPhase1Map(){
+  buildKMap("kmap", 1);
+}
+
+function checkTruth(){
+  const { totalCells } = getDims();
+  let err = 0;
+  for(let i = 0; i < totalCells; i++){
+    if(user[i] !== solution[i]) err++;
+  }
+  if(err === 0){
+    truthValidated = true;
+    $("truthStatus").textContent = "✔ Tabella corretta! Ora puoi passare alla Fase 2.";
+    $("btnGoPhase2").disabled = false;
+  }else{
+    truthValidated = false;
+    $("btnGoPhase2").disabled = true;
+    $("truthStatus").textContent = `❌ Errori nella mappa: ${err}`;
+  }
+}
+
+function goPhase2(){
+  if(!truthValidated){
+    $("truthStatus").textContent = "⚠️ Convalida prima correttamente la tabella!";
+    return;
+  }
+  $("fase1").classList.add("hidden");
+  $("fase2").classList.remove("hidden");
+}
+
+function startPhase3(selectedMode){
+  mode = selectedMode;
+  $("fase2").classList.add("hidden");
+  $("fase3").classList.remove("hidden");
+  $("modeLabel").textContent = mode === "min"
+    ? "Modalità attiva: mintermini (copertura degli 1)"
+    : "Modalità attiva: maxtermini (copertura degli 0)";
+
+  groups = [[]];
+  currentGroup = 0;
+  selected = new Set();
+
+  drawPhase3Map();
+}
+
+function drawPhase3Map(){
+  phase3Cells = buildKMap("kmap2", 3);
+  renderGroups();
+}
+
+function togglePhase3Cell(i){
+  if(mapSolved) return;
+  if(selected.has(i)){
+    selected.delete(i);
+  }else{
+    selected.add(i);
+  }
+
+  groups[currentGroup] = [...selected].sort((a,b) => a-b);
+  drawPhase3Map();
+}
+
+function saveCurrentGroup(){
+  groups[currentGroup] = [...selected].sort((a,b) => a-b);
+}
+
+function nextGroup(){
+  if(mapSolved) return;
+  saveCurrentGroup();
+
+  if(currentGroup < groups.length - 1){
+    currentGroup++;
+  }else{
+    groups.push([]);
+    currentGroup = groups.length - 1;
+  }
+
+  selected = new Set(groups[currentGroup] || []);
+  drawPhase3Map();
+}
+
+function prevGroup(){
+  if(mapSolved) return;
+  saveCurrentGroup();
+
+  if(currentGroup > 0){
+    currentGroup--;
+  }
+
+  selected = new Set(groups[currentGroup] || []);
+  drawPhase3Map();
+}
+
+function deleteGroup(){
+  if(mapSolved || groups.length === 1) return;
+
+  groups.splice(currentGroup, 1);
+  currentGroup = Math.max(0, currentGroup - 1);
+  selected = new Set(groups[currentGroup] || []);
+  drawPhase3Map();
+}
+
+function circularIntervalFromSet(values, n){
+  const set = uniqueSorted(values);
+  if(set.length === 0) return null;
+
+  const allowedLengths = n === 2 ? [1, 2] : [1, 2, 4];
+  for(const len of allowedLengths){
+    for(let start = 0; start < n; start++){
+      const interval = [];
+      for(let i = 0; i < len; i++) interval.push((start + i) % n);
+      const normalized = uniqueSorted(interval);
+      if(normalized.length === set.length && normalized.every((v, idx) => v === set[idx])){
+        const wraps = start + len - 1 >= n;
+        return { start, len, indices: interval, wraps };
+      }
+    }
+  }
+  return null;
+}
+
+function intervalPieces(interval, n){
+  if(!interval) return [];
+  if(!interval.wraps){
+    return [{ start: interval.start, end: (interval.start + interval.len - 1), wraps: false }];
+  }
+
+  const end = (interval.start + interval.len - 1) % n;
+  return [
+    { start: interval.start, end: n - 1, wraps: true, edge: "end" },
+    { start: 0, end: end, wraps: true, edge: "start" }
+  ];
+}
+
+function analyzeGroup(indices){
+  const { numRows, numCols } = getDims();
+  const cells = uniqueSorted(indices);
+  if(cells.length === 0) return { valid: false, empty: true };
+
+  const rows = uniqueSorted(cells.map(i => Math.floor(i / numCols)));
+  const cols = uniqueSorted(cells.map(i => i % numCols));
+
+  const expected = new Set();
+  rows.forEach(r => cols.forEach(c => expected.add(r * numCols + c)));
+
+  if(expected.size !== cells.length) return { valid: false, cells };
+
+  for(const i of cells){
+    if(!expected.has(i)) return { valid: false, cells };
+  }
+
+  const rowInterval = circularIntervalFromSet(rows, numRows);
+  const colInterval = circularIntervalFromSet(cols, numCols);
+  if(!rowInterval || !colInterval) return { valid: false, cells };
+
+  const literals = countLiterals(cells);
+
+  return {
+    valid: true,
+    cells,
+    rows,
+    cols,
+    rowInterval,
+    colInterval,
+    literals,
+    mask: maskFromCells(cells)
+  };
+}
+
+function countLiterals(cells){
+  if(cells.length === 0) return 0;
+  const bits = cells.map(cellBits);
+  let count = 0;
+
+  for(let pos = 0; pos < currentVars; pos++){
+    const v = bits[0][pos];
+    if(bits.every(b => b[pos] === v)) count++;
+  }
+  return count;
+}
+
+function renderGroups(){
+  const { numRows, numCols } = getDims();
+  const overlayHost = $("kmap2");
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
+  overlayHost.appendChild(overlay);
+
+  const palette = [
+    { border: "rgba(255,70,70,0.95)", fill: "rgba(255,70,70,0.04)" },
+    { border: "rgba(90,150,255,0.95)", fill: "rgba(90,150,255,0.04)" },
+    { border: "rgba(255,220,80,0.95)", fill: "rgba(255,220,80,0.04)" },
+    { border: "rgba(90,230,190,0.95)", fill: "rgba(90,230,190,0.04)" },
+    { border: "rgba(190,110,255,0.95)", fill: "rgba(190,110,255,0.04)" },
+  ];
+
+  const gridRect = overlayHost.getBoundingClientRect();
+
+  groups.forEach((rawGroup, idx) => {
+    const g = idx === currentGroup ? [...selected] : rawGroup;
+    const desc = analyzeGroup(g);
+    const style = palette[idx % palette.length];
+    const thickness = Math.max(2, 16 - idx * 3);
+
+    if(!desc.valid){
+      for(const i of uniqueSorted(g)){
+        const el = phase3Cells[i];
+        if(!el) continue;
+        const r = el.getBoundingClientRect();
+        const box = document.createElement("div");
+        box.className = "group-piece";
+        box.style.left = `${r.left - gridRect.left}px`;
+        box.style.top = `${r.top - gridRect.top}px`;
+        box.style.width = `${r.width}px`;
+        box.style.height = `${r.height}px`;
+        box.style.borderColor = style.border;
+        box.style.borderWidth = `${Math.max(2, thickness)}px`;
+        box.style.background = style.fill;
+        box.style.zIndex = 20 + idx;
+        overlay.appendChild(box);
+      }
+      return;
+    }
+
+    const rowPieces = intervalPieces(desc.rowInterval, numRows);
+    const colPieces = intervalPieces(desc.colInterval, numCols);
+
+    rowPieces.forEach(rp => {
+      colPieces.forEach(cp => {
+        const topLeftIndex = rp.start * numCols + cp.start;
+        const bottomRightIndex = rp.end * numCols + cp.end;
+
+        const topLeft = phase3Cells[topLeftIndex];
+        const bottomRight = phase3Cells[bottomRightIndex];
+        if(!topLeft || !bottomRight) return;
+
+        const a = topLeft.getBoundingClientRect();
+        const b = bottomRight.getBoundingClientRect();
+
+        const piece = document.createElement("div");
+        piece.className = "group-piece";
+        piece.style.left = `${a.left - gridRect.left - 1}px`;
+        piece.style.top = `${a.top - gridRect.top - 1}px`;
+        piece.style.width = `${b.right - a.left + 2}px`;
+        piece.style.height = `${b.bottom - a.top + 2}px`;
+        piece.style.borderColor = style.border;
+        piece.style.background = style.fill;
+        piece.style.zIndex = 20 + idx;
+
+        const omitTop = rowPieces.length > 1 && rp.start === 0;
+        const omitBottom = rowPieces.length > 1 && rp.end === (numRows - 1);
+        const omitLeft = colPieces.length > 1 && cp.start === 0;
+        const omitRight = colPieces.length > 1 && cp.end === (numCols - 1);
+
+        piece.style.borderTopWidth = omitTop ? "0px" : `${thickness}px`;
+        piece.style.borderRightWidth = omitRight ? "0px" : `${thickness}px`;
+        piece.style.borderBottomWidth = omitBottom ? "0px" : `${thickness}px`;
+        piece.style.borderLeftWidth = omitLeft ? "0px" : `${thickness}px`;
+
+        overlay.appendChild(piece);
+      });
+    });
+  });
+}
+
+function targetMaskForMode(){
+  const { totalCells } = getDims();
+  let mask = 0;
+  for(let i = 0; i < totalCells; i++){
+    const target = (mode === "min") ? 1 : 0;
+    if(user[i] === target) mask |= (1 << i);
+  }
+  return mask;
+}
+
+function generateRectangleCandidates(targetMask){
+  const { numRows, numCols } = getDims();
+  const candidates = [];
+  const seen = new Set();
+
+  const allowedRowLens = numRows === 2 ? [1, 2] : [1, 2, 4];
+  const allowedColLens = [1, 2, 4];
+
+  for(const rLen of allowedRowLens){
+    for(let rStart = 0; rStart < numRows; rStart++){
+      const rows = [];
+      for(let i = 0; i < rLen; i++) rows.push((rStart + i) % numRows);
+
+      for(const cLen of allowedColLens){
+        for(let cStart = 0; cStart < numCols; cStart++){
+          const cols = [];
+          for(let j = 0; j < cLen; j++) cols.push((cStart + j) % numCols);
+
+          const cells = [];
+          rows.forEach(r => cols.forEach(c => cells.push(r * numCols + c)));
+          const mask = maskFromCells(cells);
+
+          if(mask === 0) continue;
+          if((mask & ~targetMask) !== 0) continue;
+
+          const key = [...new Set(cells)].sort((a,b)=>a-b).join(",");
+          if(seen.has(key)) continue;
+          seen.add(key);
+
+          const desc = analyzeGroup(cells);
+          if(!desc.valid) continue;
+
+          candidates.push({
+            mask: desc.mask,
+            literals: desc.literals,
+            cells: desc.cells
+          });
+        }
+      }
+    }
+  }
+
+  return candidates;
+}
+
+function solveMinimalCover(targetMask){
+  const { totalCells } = getDims();
+  if(targetMask === 0){
+    return { literals: 0, groups: 0, picks: [] };
+  }
+
+  const candidates = generateRectangleCandidates(targetMask);
+  const byCell = Array.from({ length: totalCells }, () => []);
+
+  candidates.forEach((cand, idx) => {
+    for(let i = 0; i < totalCells; i++){
+      if(cand.mask & (1 << i)) byCell[i].push(idx);
+    }
+  });
+
+  const memo = new Map();
+
+  function cmp(a, b){
+    if(a.literals !== b.literals) return a.literals - b.literals;
+    if(a.groups !== b.groups) return a.groups - b.groups;
+    return 0;
+  }
+
+  function dfs(remMask){
+    if(remMask === 0){
+      return { literals: 0, groups: 0, picks: [] };
+    }
+
+    if(memo.has(remMask)) return memo.get(remMask);
+
+    const lowestBit = remMask & -remMask;
+    const bitIndex = Math.log2(lowestBit);
+
+    let best = null;
+
+    for(const candIdx of byCell[bitIndex]){
+      const cand = candidates[candIdx];
+      const nextMask = remMask & ~cand.mask;
+      const sub = dfs(nextMask);
+      if(!sub) continue;
+
+      const candidateScore = {
+        literals: sub.literals + cand.literals,
+        groups: sub.groups + 1,
+        picks: [cand, ...sub.picks]
+      };
+
+      if(!best || cmp(candidateScore, best) < 0){
+        best = candidateScore;
+      }
+    }
+
+    memo.set(remMask, best);
+    return best;
+  }
+
+  return dfs(targetMask);
+}
+
+function verifyQM(){
+  saveCurrentGroup();
+  const targetMask = targetMaskForMode();
+
+  const filteredGroups = groups
+    .map(g => uniqueSorted(g))
+    .filter(g => g.length > 0);
+
+  const detail = [];
+  let valid = true;
+  let userMask = 0;
+  let userLiterals = 0;
+
+  if(targetMask === 0){
+    $("qmStatus").textContent = "✔ Nessun mintermine/maxtermine da coprire";
+    $("qmDetail").textContent = "";
+    renderGroups();
+    handleMapSolved();
+    return;
+  }
+
+  for(let gi = 0; gi < filteredGroups.length; gi++){
+    const desc = analyzeGroup(filteredGroups[gi]);
+    if(!desc.valid){
+      valid = false;
+      detail.push(`Gruppo ${gi + 1}: non è un rettangolo toroidale valido`);
+      continue;
+    }
+
+    const wrongCells = desc.cells.filter(i => (targetMask & (1 << i)) === 0);
+    if(wrongCells.length > 0){
+      valid = false;
+      detail.push(`Gruppo ${gi + 1}: contiene celle fuori target`);
+    }else{
+      detail.push(`Gruppo ${gi + 1}: OK, literali = ${desc.literals}`);
+    }
+
+    userMask |= desc.mask;
+    userLiterals += desc.literals;
+  }
+
+  const coverOk = (userMask === targetMask);
+  if(!coverOk){
+    valid = false;
+    detail.unshift("Copertura incompleta: non tutti i target sono coperti.");
+  }
+
+  const best = solveMinimalCover(targetMask);
+
+  if(!best){
+    $("qmStatus").textContent = "❌ Impossibile trovare una copertura minima";
+    $("qmDetail").textContent = detail.join(" | ");
+    return;
+  }
+
+  const optimal = valid && coverOk && userLiterals === best.literals;
+
+  if(optimal){
+    $("qmStatus").textContent = "✔ Soluzione corretta e ottima secondo Quine-McCluskey!";
+    $("qmDetail").textContent = detail.join(" | ") + ` | Copertura ottima: ${best.groups} gruppo/i, ${best.literals} literali`;
+    renderGroups();
+    handleMapSolved();
+  }else{
+    wrongAttempts++;
+    $("qmStatus").textContent = `❌ Non ottima. Literali tuoi: ${userLiterals}, minimi: ${best.literals}`;
+    $("qmDetail").textContent = detail.join(" | ") + ` | Copertura ottima trovata: ${best.groups} gruppo/i, ${best.literals} literali`;
+    renderGroups();
+  }
+}
+
+function handleMapSolved(){
+  if(mapSolved) return;
+  mapSolved = true;
+
+  // 500 punti base per ciascuna mappa (3 var + 4 var = 1000 max), meno 25 pt per tentativo errato
+  const mapPoints = Math.max(300, 500 - wrongAttempts * 25);
+  score += mapPoints;
+  wrongAttempts = 0;
+  updateTopStats();
+
+  if(stageIndex === 0){
+    // Completata la mappa a 3 variabili -> mostra bottone per passare a quella a 4 variabili
+    $("btnNextMap").classList.remove("hidden");
+  }else{
+    // Completata anche la mappa a 4 variabili -> fine partita e salvataggio su piattaforma
+    finishChallenge();
+  }
+}
+
+function goToNextMap(){
+  stageIndex = 1;
+  currentVars = STAGES[stageIndex];
+  setupCurrentMap();
+}
+
+function setupCurrentMap(){
+  const { totalCells } = getDims();
+  truth = [];
+  solution = [];
+  user = Array(totalCells).fill(0);
+
+  mode = "min";
+  groups = [[]];
+  currentGroup = 0;
+  selected = new Set();
+  phase3Cells = [];
+  truthValidated = false;
+  mapSolved = false;
+
+  $("truthStatus").textContent = "";
+  $("qmStatus").textContent = "";
+  $("qmDetail").textContent = "";
+  $("btnGoPhase2").disabled = true;
+  $("btnNextMap").classList.add("hidden");
+
+  $("fase1").classList.remove("hidden");
+  $("fase2").classList.add("hidden");
+  $("fase3").classList.add("hidden");
+  $("finalScreen").classList.add("hidden");
+
+  updateTopStats();
+  generateTruth();
+  drawTruthTable();
+  buildSolution();
+  drawPhase1Map();
+}
+
+function restartCurrentMap(){
+  setupCurrentMap();
+}
+
+function restartFullChallenge(){
+  clearInterval(timerInterval);
+  stageIndex = 0;
+  currentVars = STAGES[0];
+  score = 0;
+  wrongAttempts = 0;
+  startedAt = Date.now();
+  $("timerDisplay").textContent = "00:00";
+  timerInterval = setInterval(() => {
+    $("timerDisplay").textContent = formatTime(elapsedSeconds());
+  }, 500);
+  setupCurrentMap();
+}
+
+async function finishChallenge(){
+  clearInterval(timerInterval);
+  const duration = elapsedSeconds();
+
+  $("fase1").classList.add("hidden");
+  $("fase2").classList.add("hidden");
+  $("fase3").classList.add("hidden");
+  $("finalScreen").classList.remove("hidden");
+
+  $("finalSummary").textContent =
+    `${studentName}, hai risolto la mappa a 3 variabili e la mappa a 4 variabili! ` +
+    `Punteggio totale: ${score} pt — Tempo impiegato: ${formatTime(duration)}.`;
+
+  $("saveStatus").textContent = "Salvataggio dei risultati…";
+
+  try{
+    const response = await fetch(API + "/api/games/complete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        durationSeconds: duration,
+        correctAnswers: 2,
+        totalQuestions: 2,
+        score: score
+      })
+    });
+    const data = await response.json();
+    if(!response.ok) throw new Error(data.error || "Salvataggio non riuscito.");
+    $("saveStatus").textContent = "✅ Risultato salvato correttamente nella piattaforma.";
+  }catch(error){
+    $("saveStatus").textContent = "⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.";
+    console.error("Errore salvataggio Karnaugh:", error);
+  }
+}
+
+// =========================================================================
+// INIZIALIZZAZIONE E CONTROLLO ACCESSO STUDENTE
+// =========================================================================
+(async function init(){
+  if(!token || !API){
+    $("welcomeLabel").textContent = "Accesso non disponibile";
+    location.replace("../index.html");
+    return;
+  }
+
+  try{
+    const response = await fetch(API + "/api/me", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await response.json();
+    if(!response.ok) throw new Error("Sessione non valida");
+    studentName = data.student || "Studente";
+    $("welcomeLabel").textContent = `👤 ${studentName}`;
+
+    startedAt = Date.now();
+    timerInterval = setInterval(() => {
+      $("timerDisplay").textContent = formatTime(elapsedSeconds());
+    }, 500);
+
+    setupCurrentMap();
+  }catch(error){
+    sessionStorage.removeItem("studentGameToken");
+    location.replace("../index.html");
+  }
+})();
+</script>
+</body>
+</html>
