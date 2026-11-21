@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Laboratorio Virtuale – Capacità</title>
+<script src="../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root{
+    --bg:#0b111a;
+    --panel:#131c28;
+    --panel-alt:#0e1621;
+    --border:#28394d;
+    --accent:#38bdf8;
+    --accent-2:#4dd0e1;
+    --ok:#22c55e;
+    --err:#f87171;
+    --text:#e6edf3;
+    --muted:#94a3b8;
+  }
+
+  *{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100dvh;
+    overflow-x:hidden;
+    font-family:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  /* BARRA SUPERIORE PIATTAFORMA */
+  .topbar{
+    background:linear-gradient(90deg, #0f4c75, #1e6091);
+    padding:10px 14px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+  }
+
+  .topbar-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+  }
+
+  .exit-btn{
+    color:#fff;
+    text-decoration:none;
+    background:rgba(0,0,0,0.28);
+    border:1px solid rgba(255,255,255,0.35);
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  .title-wrap h1{
+    margin:0;
+    font-size:clamp(1rem, 3.2vw, 1.3rem);
+    line-height:1.15;
+  }
+
+  .title-wrap small{
+    display:block;
+    font-size:11px;
+    color:#dbeafe;
+    opacity:0.9;
+  }
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-left:auto;
+  }
+
+  .pill-stat{
+    background:rgba(0,0,0,0.32);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:10px;
+    padding:5px 10px;
+    font-size:12px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+
+  .rotate-btn{
+    background:rgba(255,255,255,0.14);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.3);
+    border-radius:10px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+
+  .rotate-btn:active{
+    transform:scale(0.97);
+  }
+
+  /* SUGGERIMENTO ROTAZIONE SU MOBILE VERTICALE */
+  .orientation-hint{
+    display:none;
+    background:#172536;
+    border-bottom:1px solid #2b425e;
+    color:#bae6fd;
+    font-size:12px;
+    padding:7px 14px;
+    text-align:center;
+  }
+
+  @media (max-width: 767px) and (orientation: portrait){
+    .orientation-hint{
+      display:block;
+    }
+  }
+
+  /* LAYOUT PRINCIPALE RESPONSIVO */
+  .lab{
+    max-width:1280px;
+    margin:0 auto;
+    padding:12px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  /* Tablet / Desktop */
+  @media (min-width: 960px){
+    .lab{
+      grid-template-columns:340px 1fr 380px;
+      padding:16px;
+      gap:16px;
+    }
+  }
+
+  /* Smartphone o Tablet in modalità ORIZZONTALE (Landscape) */
+  @media (orientation: landscape) and (max-width: 959px){
+    .lab{
+      grid-template-columns:1.05fr 0.95fr;
+      padding:8px 10px;
+      gap:10px;
+    }
+    .panel-controls{
+      grid-column:1;
+      grid-row:1 / span 2;
+    }
+    .panel-visual{
+      grid-column:2;
+      grid-row:1;
+    }
+    .panel-metrics{
+      grid-column:2;
+      grid-row:2;
+    }
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px 14px;
+    min-width:0;
+  }
+
+  .panel h3{
+    margin:0 0 10px;
+    font-size:15px;
+    color:var(--accent-2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  /* CONTROLLI DOPPI: SLIDER + CASELLA NUMERICA */
+  .control-group{
+    background:var(--panel-alt);
+    border:1px solid #1e2d3f;
+    border-radius:10px;
+    padding:8px 10px;
+    margin-bottom:8px;
+  }
+
+  .control-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:6px;
+  }
+
+  .control-header label{
+    font-size:13px;
+    font-weight:700;
+    color:#cbd5e1;
+  }
+
+  .num-input-wrap{
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+
+  .num-input{
+    width:82px;
+    background:#091018;
+    color:#fff;
+    border:1.5px solid #334a63;
+    border-radius:8px;
+    padding:5px 7px;
+    font-size:14px;
+    font-weight:700;
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .num-input:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 2px rgba(56,189,248,0.25);
+  }
+
+  .unit-tag{
+    font-size:12px;
+    color:var(--muted);
+    min-width:26px;
+    font-weight:600;
+  }
+
+  input[type=range]{
+    width:100%;
+    height:26px;
+    accent-color:var(--accent);
+    cursor:pointer;
+    margin:0;
+  }
+
+  /* BOX RICHIESTE ESERCIZIO */
+  .exerciseBox{
+    background:#0c141f;
+    border:1.5px solid #26415e;
+    border-radius:12px;
+    padding:10px 12px;
+    margin-top:8px;
+    font-size:13px;
+  }
+
+  .req-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:6px 8px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.03);
+    margin-top:5px;
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  .req-row.done{
+    background:rgba(34,197,94,0.14);
+    border-color:rgba(34,197,94,0.45);
+    color:#bbf7d0;
+  }
+
+  .badge-status{
+    font-weight:800;
+    font-size:12px;
+  }
+
+  .btn-primary{
+    width:100%;
+    margin-top:10px;
+    padding:12px;
+    border:none;
+    border-radius:11px;
+    background:linear-gradient(90deg, #0284c7, #0ea5e9);
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(14,165,233,0.28);
+  }
+
+  .btn-primary:active{
+    transform:scale(0.98);
+  }
+
+  .btn-secondary{
+    width:100%;
+    margin-top:8px;
+    padding:10px;
+    border:1px solid #334a63;
+    border-radius:11px;
+    background:#182433;
+    color:#e2e8f0;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .feedback-log{
+    margin-top:8px;
+    font-size:12.5px;
+    font-weight:700;
+    min-height:1.3em;
+  }
+
+  /* VISUALIZZAZIONE CONDENSATORE RESPONSIVA */
+  #capacitorBox{
+    width:100%;
+    height:clamp(210px, 34vh, 300px);
+    background:#080f17;
+    border:1px solid #1e2e42;
+    border-radius:12px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  @media (orientation: landscape) and (max-width: 959px){
+    #capacitorBox{
+      height:190px;
+    }
+  }
+
+  .plate{
+    position:absolute;
+    background:rgba(203,213,225,0.24);
+    border:2px solid #94a3b8;
+    border-radius:4px;
+  }
+
+  .charge{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    position:absolute;
+  }
+  .pos{ background:#ef4444; box-shadow:0 0 4px #ef4444; }
+  .neg{ background:#22d3ee; box-shadow:0 0 4px #22d3ee; }
+
+  #dielectric{
+    position:absolute;
+    background:rgba(56,189,248,0.22);
+    border:1px dashed #38bdf8;
+    border-radius:3px;
+  }
+
+  /* LETTURE E GRAFICO */
+  .readouts{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:10px;
+  }
+
+  .readout-card{
+    background:var(--panel-alt);
+    border:1px solid #1e2d3f;
+    border-radius:10px;
+    padding:8px 10px;
+    text-align:center;
+  }
+
+  .readout-card small{
+    display:block;
+    font-size:11px;
+    color:var(--muted);
+  }
+
+  .readout-card strong{
+    display:block;
+    font-size:16px;
+    color:#fff;
+    margin-top:2px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .chart-wrap{
+    position:relative;
+    width:100%;
+    height:195px;
+  }
+
+  .success{
+    margin-top:10px;
+    padding:12px;
+    background:rgba(20,83,45,0.85);
+    border:1.5px solid #22c55e;
+    border-radius:12px;
+    text-align:center;
+    color:#dcfce7;
+    font-size:13.5px;
+  }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="exit-btn" href="../index.html">← Esci</a>
+      <div class="title-wrap">
+        <h1>Laboratorio Virtuale – Capacità</h1>
+        <small id="welcomeText">Verifica sessione…</small>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="pill-stat">⏱ <span id="timerDisplay">00:00</span></div>
+      <div class="pill-stat">🎯 <span id="progressDisplay">0 / 3</span></div>
+      <button type="button" class="rotate-btn" id="rotateBtn" onclick="toggleLandscapeHint()">📱 Ruota</button>
+    </div>
+  </header>
+
+  <div class="orientation-hint" id="orientationHint">
+    💡 Suggerimento: ruota il telefono in <strong>orizzontale</strong> per vedere contemporaneamente controlli, condensatore e grafico!
+  </div>
+
+  <main class="lab">
+
+    <!-- PANNELLO 1: PARAMETRI FISICI, TENSIONE ED ESERCIZIO -->
+    <section class="panel panel-controls">
+      <h3>Parametri fisici (Cursore o Valore)</h3>
+
+      <!-- Permittività relativa er -->
+      <div class="control-group">
+        <div class="control-header">
+          <label for="erNum">Permittività relativa (εr)</label>
+          <div class="num-input-wrap">
+            <input id="erNum" class="num-input" type="number" min="1" max="10" step="0.1" value="4">
+            <span class="unit-tag">—</span>
+          </div>
+        </div>
+        <input id="er" type="range" min="1" max="10" step="0.1" value="4" aria-label="Cursore permittività relativa">
+      </div>
+
+      <!-- Distanza d -->
+      <div class="control-group">
+        <div class="control-header">
+          <label for="dNum">Distanza armature (d)</label>
+          <div class="num-input-wrap">
+            <input id="dNum" class="num-input" type="number" min="0.5" max="5" step="0.1" value="2">
+            <span class="unit-tag">mm</span>
+          </div>
+        </div>
+        <input id="d" type="range" min="0.5" max="5" step="0.1" value="2" aria-label="Cursore distanza armature">
+      </div>
+
+      <!-- Superficie A -->
+      <div class="control-group">
+        <div class="control-header">
+          <label for="ANum">Superficie armature (A)</label>
+          <div class="num-input-wrap">
+            <input id="ANum" class="num-input" type="number" min="1" max="10" step="0.1" value="5">
+            <span class="unit-tag">dm²</span>
+          </div>
+        </div>
+        <input id="A" type="range" min="1" max="10" step="0.1" value="5" aria-label="Cursore superficie armature">
+      </div>
+
+      <!-- Tensione V -->
+      <div class="control-group">
+        <div class="control-header">
+          <label for="VNum">Tensione applicata (V)</label>
+          <div class="num-input-wrap">
+            <input id="VNum" class="num-input" type="number" min="-100" max="100" step="1" value="20">
+            <span class="unit-tag">V</span>
+          </div>
+        </div>
+        <input id="V" type="range" min="-100" max="100" step="1" value="20" aria-label="Cursore tensione">
+      </div>
+
+      <!-- BOX OBBLIGATORIO: 3 RICHIESTE -->
+      <div id="exerciseBox" class="exerciseBox"></div>
+
+      <button type="button" class="btn-primary" onclick="checkExercise()">✔ Verifica parametri e carica</button>
+      <div id="feedbackLog" class="feedback-log" aria-live="polite"></div>
+    </section>
+
+    <!-- PANNELLO 2: VISUALIZZAZIONE FISICA CONDENSATORE -->
+    <section class="panel panel-visual">
+      <h3>Visualizzazione fisica</h3>
+      <div id="capacitorBox">
+        <div id="leftPlate" class="plate"></div>
+        <div id="rightPlate" class="plate"></div>
+        <div id="dielectric"></div>
+      </div>
+    </section>
+
+    <!-- PANNELLO 3: GRANDEZZE E GRAFICO Q-V -->
+    <section class="panel panel-metrics">
+      <h3>Grandezze misurate</h3>
+      <div class="readouts">
+        <div class="readout-card">
+          <small>Capacità (C)</small>
+          <strong><span id="Cval">0.00</span> nF</strong>
+        </div>
+        <div class="readout-card">
+          <small>Carica (Q = C·V)</small>
+          <strong><span id="Qval">0.00</span> nC</strong>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="qvChart"></canvas>
+      </div>
+
+      <div id="successMsg" class="success hidden">
+        <strong>🎉 Complimenti! Tutte e 3 le richieste completate!</strong>
+        <p id="finalTimeText" style="margin:6px 0;"></p>
+        <p id="saveStatus" style="margin:6px 0;font-weight:700;">Salvataggio…</p>
+        <button type="button" class="btn-secondary" onclick="startNewExercise()">🔄 Nuovo esercizio (3 nuove richieste)</button>
+        <div style="margin-top:8px;">
+          <a href="../index.html" style="color:#a7f3d0;font-size:12.5px;">Torna alla pagina di accesso</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+<script>
+(() => {
+  "use strict";
+
+  // =========================================================================
+  // INTEGRAZIONE PIATTAFORMA (ACCESSO, TIMER, COMPLETAMENTO SENZA PUNTEGGIO)
+  // =========================================================================
+  const API = window.APP_CONFIG?.API_BASE?.replace(/\/$/, "");
+  const token = sessionStorage.getItem("studentGameToken");
+  let studentName = "Studente";
+
+  let startedAt = Date.now();
+  let timerHandle = null;
+  let exerciseCompleted = false;
+
+  const formatTime = seconds =>
+    String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0");
+
+  const elapsedSeconds = () => Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+
+  // =========================================================================
+  // COSTANTI FISICHE E STATO ESERCIZIO (SOLO MODALITÀ ESERCIZIO, 3 RICHIESTE)
+  // =========================================================================
+  const eps0 = 8.854e-12;
+  const QMAX = 8e-7;
+  const TOL = 0.05; // Tolleranza 5%
+
+  let targetC = 0;
+  let foundQs = [
+    { value: 0, done: false },
+    { value: 0, done: false },
+    { value: 0, done: false }
+  ];
+
+  // Riferimenti doppi: slider + input numerico
+  const controls = [
+    { range: document.getElementById("er"), num: document.getElementById("erNum"), min: 1, max: 10 },
+    { range: document.getElementById("d"),  num: document.getElementById("dNum"),  min: 0.5, max: 5 },
+    { range: document.getElementById("A"),  num: document.getElementById("ANum"),  min: 1, max: 10 },
+    { range: document.getElementById("V"),  num: document.getElementById("VNum"),  min: -100, max: 100 }
+  ];
+
+  const Cval = document.getElementById("Cval");
+  const Qval = document.getElementById("Qval");
+  const capBox = document.getElementById("capacitorBox");
+  const leftPlate = document.getElementById("leftPlate");
+  const rightPlate = document.getElementById("rightPlate");
+  const dielectric = document.getElementById("dielectric");
+
+  // Sincronizzazione bidirezionale Cursore <-> Casella Numerica
+  controls.forEach(ctrl => {
+    ctrl.range.addEventListener("input", () => {
+      ctrl.num.value = ctrl.range.value;
+      update();
+    });
+
+    ctrl.num.addEventListener("input", () => {
+      const raw = parseFloat(ctrl.num.value);
+      if (!Number.isNaN(raw)) {
+        const clamped = Math.min(ctrl.max, Math.max(ctrl.min, raw));
+        ctrl.range.value = clamped;
+        update();
+      }
+    });
+
+    ctrl.num.addEventListener("change", () => {
+      let raw = parseFloat(ctrl.num.value);
+      if (Number.isNaN(raw)) raw = parseFloat(ctrl.range.value);
+      const clamped = Math.min(ctrl.max, Math.max(ctrl.min, raw));
+      ctrl.num.value = clamped;
+      ctrl.range.value = clamped;
+      update();
+    });
+  });
+
+  // =========================================================================
+  // GRAFICO Q-V RESPONSIVO
+  // =========================================================================
+  const chart = new Chart(document.getElementById("qvChart"), {
+    type: "line",
+    data: {
+      datasets: [
+        { label: "Q = C·V", borderColor: "#4dd0e1", data: [], tension: 0, pointRadius: 0 },
+        { label: "Punto di lavoro", data: [], backgroundColor: "#facc15", borderColor: "#facc15", pointRadius: 6, showLine: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { labels: { color: "#cbd5e1", boxWidth: 12, font: { size: 11 } } }
+      },
+      scales: {
+        x: {
+          type: "linear", min: -100, max: 100,
+          ticks: { color: "#94a3b8", font: { size: 10 } },
+          grid: { color: "rgba(148,163,184,0.12)" },
+          title: { display: true, text: "Tensione (V)", color: "#cbd5e1", font: { size: 11 } }
+        },
+        y: {
+          type: "linear", min: -QMAX, max: QMAX,
+          ticks: { color: "#94a3b8", font: { size: 10 } },
+          grid: { color: "rgba(148,163,184,0.12)" },
+          title: { display: true, text: "Carica (C)", color: "#cbd5e1", font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  // =========================================================================
+  // GENERAZIONE ESERCIZIO (SEMPRE ATTIVO CON 3 RICHIESTE)
+  // =========================================================================
+  function random(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  function randomNoZero(min, max, deadZone = 12) {
+    let v;
+    do {
+      v = min + Math.random() * (max - min);
+    } while (Math.abs(v) < deadZone);
+    return v;
+  }
+
+  function renderExerciseBox() {
+    const doneCount = foundQs.filter(q => q.done).length;
+    document.getElementById("progressDisplay").textContent = `${doneCount} / 3`;
+
+    const box = document.getElementById("exerciseBox");
+    box.innerHTML = `
+      <div style="margin-bottom:6px;">
+        <strong>1. Imposta la capacità richiesta (±5%):</strong><br>
+        <span style="color:#38bdf8;font-size:15px;font-weight:800;">C = ${(targetC * 1e9).toFixed(3)} nF</span>
+      </div>
+      <div>
+        <strong>2. Raggiungi le 3 cariche richieste (±5%):</strong>
+        ${foundQs.map((q, idx) => `
+          <div class="req-row ${q.done ? "done" : ""}">
+            <span>Q<sub>${idx + 1}</sub> = <strong>${(q.value * 1e9).toFixed(3)} nC</strong></span>
+            <span class="badge-status">${q.done ? "✔ Trovata" : "⏳ Da trovare"}</span>
+          </div>
+        `).join("")}
+      </div>
+      <div style="margin-top:6px;font-size:11.5px;color:#94a3b8;">
+        Imposta prima εr, d, A per ottenere C, poi varia V tra -100 V e +100 V e premi Verifica per ciascuna carica Q.
+      </div>
+    `;
+  }
+
+  window.startNewExercise = function() {
+    clearInterval(timerHandle);
+    exerciseCompleted = false;
+    startedAt = Date.now();
+    document.getElementById("timerDisplay").textContent = "00:00";
+    document.getElementById("successMsg").classList.add("hidden");
+    document.getElementById("feedbackLog").textContent = "";
+
+    // Scegliamo parametri fisici realizzabili così la capacità target è sempre raggiungibile
+    const randEr = Math.round(random(1.5, 9.5) * 10) / 10;
+    const randDmm = Math.round(random(0.8, 4.5) * 10) / 10;
+    const randAdm2 = Math.round(random(1.5, 9.5) * 10) / 10;
+    targetC = eps0 * randEr * (randAdm2 * 0.01) / (randDmm * 1e-3);
+
+    // 3 tensioni distinte tra -95 V e +95 V
+    const Vs = [];
+    while (Vs.length < 3) {
+      const candidateV = Math.round(randomNoZero(-95, 95, 15));
+      if (Vs.every(prev => Math.abs(prev - candidateV) >= 18)) {
+        Vs.push(candidateV);
+      }
+    }
+
+    foundQs = Vs.map(v => ({
+      value: targetC * v,
+      done: false
+    }));
+
+    renderExerciseBox();
+
+    timerHandle = setInterval(() => {
+      document.getElementById("timerDisplay").textContent = formatTime(elapsedSeconds());
+    }, 500);
+  };
+
+  // =========================================================================
+  // VERIFICA ESERCIZIO E SALVATAGGIO PIATTAFORMA
+  // =========================================================================
+  window.checkExercise = function() {
+    if (exerciseCompleted) return;
+
+    const er = +controls[0].range.value;
+    const dmm = +controls[1].range.value;
+    const Adm2 = +controls[2].range.value;
+    const V = +controls[3].range.value;
+
+    const d = dmm * 1e-3;
+    const A = Adm2 * 0.01;
+    const C = eps0 * er * A / d;
+    const Q = C * V;
+
+    const feedback = document.getElementById("feedbackLog");
+
+    // Tolleranza reale 5% (corretto il vecchio bug TOL + 5)
+    const cOK = (Math.abs(C - targetC) / targetC) <= TOL;
+
+    if (!cOK) {
+      feedback.style.color = "#f87171";
+      feedback.textContent = `✖ Capacità attuale (${(C * 1e9).toFixed(3)} nF) fuori tolleranza rispetto a ${(targetC * 1e9).toFixed(3)} nF (±5%).`;
+      return;
+    }
+
+    let newlyFound = 0;
+    foundQs.forEach(o => {
+      if (!o.done && (Math.abs(Q - o.value) / Math.abs(o.value)) <= TOL) {
+        o.done = true;
+        newlyFound++;
+      }
+    });
+
+    renderExerciseBox();
+
+    if (foundQs.every(o => o.done)) {
+      finishExercise();
+    } else if (newlyFound > 0) {
+      feedback.style.color = "#4ade80";
+      feedback.textContent = `✔ Capacità OK e nuova carica registrata! Cambia tensione V per trovare le rimanenti.`;
+    } else {
+      feedback.style.color = "#38bdf8";
+      feedback.textContent = `✔ Capacità corretta (${(C * 1e9).toFixed(3)} nF), ma Q = ${(Q * 1e9).toFixed(3)} nC non corrisponde a una carica mancante.`;
+    }
+  };
+
+  async function finishExercise() {
+    exerciseCompleted = true;
+    clearInterval(timerHandle);
+    const duration = elapsedSeconds();
+
+    document.getElementById("feedbackLog").textContent = "";
+    document.getElementById("finalTimeText").textContent = `Tempo impiegato: ${formatTime(duration)}`;
+    document.getElementById("successMsg").classList.remove("hidden");
+
+    const saveStatus = document.getElementById("saveStatus");
+    saveStatus.textContent = "Salvataggio completamento…";
+
+    try {
+      const response = await fetch(API + "/api/games/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          durationSeconds: duration
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Salvataggio non riuscito.");
+      saveStatus.textContent = "✅ Completamento e tempo registrati correttamente.";
+    } catch (error) {
+      saveStatus.textContent = "⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.";
+      console.error("Errore salvataggio condensatori:", error);
+    }
+  }
+
+  // =========================================================================
+  // SUPPORTO ROTAZIONE ORIZZONTALE OPZIONALE SU SMARTPHONE
+  // =========================================================================
+  window.toggleLandscapeHint = async function() {
+    try {
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      }
+      if (screen.orientation && screen.orientation.lock) {
+        const isLandscape = screen.orientation.type.startsWith("landscape");
+        await screen.orientation.lock(isLandscape ? "portrait" : "landscape");
+        return;
+      }
+    } catch (_) {
+      // Su iOS Safari o browser che non supportano orientation.lock mostriamo un avviso chiaro
+    }
+    const hint = document.getElementById("orientationHint");
+    hint.style.display = "block";
+    hint.innerHTML = "🔄 Ruota fisicamente il telefono di 90° (sbloccando la rotazione schermo dal pannello rapido del cellulare).";
+  };
+
+  // =========================================================================
+  // SIMULAZIONE E GRAFICA CONDENSATORE RESPONSIVA
+  // =========================================================================
+  function update() {
+    const er = +controls[0].range.value;
+    const dmm = +controls[1].range.value;
+    const Adm2 = +controls[2].range.value;
+    const V = +controls[3].range.value;
+
+    const d = dmm * 1e-3;
+    const A = Adm2 * 0.01;
+    const C = eps0 * er * A / d;
+    const Q = C * V;
+
+    Cval.textContent = (C * 1e9).toFixed(3);
+    Qval.textContent = (Q * 1e9).toFixed(3);
+
+    drawCapacitor(Adm2, dmm, Q);
+    updateChart(C, V, Q);
+  }
+
+  function drawCapacitor(A, d, Q) {
+    leftPlate.innerHTML = "";
+    rightPlate.innerHTML = "";
+
+    const boxW = capBox.clientWidth || 300;
+    const boxH = capBox.clientHeight || 220;
+
+    // Dimensioni adattate proporzionalmente all'altezza/larghezza reale del contenitore
+    const maxPlateH = boxH - 28;
+    const plateH = Math.min(maxPlateH, Math.max(44, (boxH * 0.25) + (A / 10) * (boxH * 0.58)));
+    const maxGap = Math.min(boxW * 0.42, 95);
+    const gap = 16 + (d / 5) * (maxGap - 16);
+    const plateW = Math.min(72, Math.max(46, boxW * 0.18));
+    const center = boxW / 2;
+    const topPos = (boxH - plateH) / 2;
+
+    leftPlate.style.width = plateW + "px";
+    leftPlate.style.height = plateH + "px";
+    leftPlate.style.left = (center - gap / 2 - plateW) + "px";
+    leftPlate.style.top = topPos + "px";
+
+    rightPlate.style.width = plateW + "px";
+    rightPlate.style.height = plateH + "px";
+    rightPlate.style.left = (center + gap / 2) + "px";
+    rightPlate.style.top = topPos + "px";
+
+    dielectric.style.left = (center - gap / 2) + "px";
+    dielectric.style.width = gap + "px";
+    dielectric.style.top = topPos + "px";
+    dielectric.style.height = plateH + "px";
+
+    const spacing = 14;
+    const cols = Math.max(1, Math.floor((plateW - 8) / spacing));
+    const rows = Math.max(1, Math.floor((plateH - 8) / spacing));
+    const maxCharges = cols * rows;
+    const filled = Math.min(maxCharges, Math.round((Math.abs(Q) / QMAX) * maxCharges));
+
+    if (filled <= 0) return;
+
+    const spa = maxCharges / filled;
+    const startX = (plateW - (cols - 1) * spacing) / 2;
+    const startY = (plateH - (rows - 1) * spacing) / 2;
+
+    const signLeft = Q >= 0 ? "pos" : "neg";
+    const signRight = Q >= 0 ? "neg" : "pos";
+
+    let count = 0;
+    for (let c = 0; c < cols && count < filled; c++) {
+      for (let r = 0; r < rows && count < filled; r += (spa / cols)) {
+        place(leftPlate, startX + (cols - 1 - c) * spacing - 3, startY + r * spacing - 3, signLeft);
+        place(rightPlate, startX + c * spacing - 3, startY + r * spacing - 3, signRight);
+        count++;
+      }
+    }
+  }
+
+  function place(plate, x, y, type) {
+    const ch = document.createElement("div");
+    ch.className = "charge " + type;
+    ch.style.left = Math.max(2, x) + "px";
+    ch.style.top = Math.max(2, y) + "px";
+    plate.appendChild(ch);
+  }
+
+  function updateChart(C, V, Q) {
+    const line = [];
+    for (let v = -100; v <= 100; v += 4) {
+      line.push({ x: v, y: C * v });
+    }
+    chart.data.datasets[0].data = line;
+    chart.data.datasets[1].data = [{ x: V, y: Q }];
+    chart.update();
+  }
+
+  window.addEventListener("resize", update);
+
+  // =========================================================================
+  // VERIFICA SESSIONE PIATTAFORMA ALL'AVVIO
+  // =========================================================================
+  (async function init() {
+    if (!token || !API) {
+      document.getElementById("welcomeText").textContent = "Accesso non disponibile";
+      location.replace("../index.html");
+      return;
+    }
+    try {
+      const response = await fetch(API + "/api/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error("Sessione non valida.");
+      studentName = data.student || "Studente";
+      document.getElementById("welcomeText").textContent = `👤 ${studentName} • Modalità Esercizio`;
+      update();
+      startNewExercise();
+    } catch (error) {
+      sessionStorage.removeItem("studentGameToken");
+      location.replace("../index.html");
+    }
+  })();
+})();
+</script>
+</body>
+</html>
