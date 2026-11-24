@@ -609,7 +609,7 @@
               `Resistenza: <span class="text-emerald-300 font-bold">R = ${r} Ω</span>`,
               `Reattanza induttiva: <span class="text-sky-300 font-bold">X_L = ${x} Ω</span>`
             ],
-            'Calcola il modulo dell'impedenza |Z|:',
+            'Calcola il modulo dell\'impedenza |Z|:',
             [
               { label: `|Z| = ${z} Ω`, icon: '🎯', correct: true },
               { label: `|Z| = ${r + x} Ω`, icon: '➕', correct: false },
@@ -627,7 +627,7 @@
               `Impedenza: <span class="text-pink-300 font-bold">Z = ${r} - j${x} Ω</span>`,
               `R = ${r} Ω, X_C = ${x} Ω`
             ],
-            'Calcola il modulo dell'impedenza |Z|:',
+            'Calcola il modulo dell\'impedenza |Z|:',
             [
               { label: `|Z| = ${z} Ω`, icon: '🎯', correct: true },
               { label: `|Z| = ${r - x} Ω`, icon: '➖', correct: false },
@@ -707,7 +707,7 @@
               `Impedenza polare: <span class="text-pink-300 font-bold">Z = ${z}∠-30° Ω</span>`,
               `Ricorda: sin(-30°) = -0.5`
             ],
-            'Quanto vale la parte immaginaria X dell'impedenza?',
+            'Quanto vale la parte immaginaria X dell\'impedenza?',
             [
               { label: `X = -${x} Ω (capacitiva)`, icon: '🎯', correct: true },
               { label: `X = +${x} Ω (induttiva)`, icon: '🔄', correct: false },
@@ -724,7 +724,7 @@
             [
               `Impedenza cartesiana: <span class="text-amber-300 font-bold">Z = ${r} + j${r} Ω</span>`
             ],
-            'Qual è l'equivalente forma polare Z = |Z|∠φ?',
+            'Qual è l\'equivalente forma polare Z = |Z|∠φ?',
             [
               { label: `Z = ${r}√2 ∠ +45° Ω`, icon: '🎯', correct: true },
               { label: `Z = ${r * 2} ∠ +45° Ω`, icon: '⚠️', correct: false },
@@ -788,7 +788,7 @@
             [
               `Componenti: <span class="text-emerald-300 font-bold">R = ${r} Ω</span>, <span class="text-sky-300 font-bold">X_L = ${xl} Ω</span>, <span class="text-pink-300 font-bold">X_C = ${xc} Ω</span>`
             ],
-            'Qual è l'angolo di fase φ dell'impedenza totale?',
+            'Qual è l\'angolo di fase φ dell\'impedenza totale?',
             [
               { label: `φ = -45° (prevalenza capacitiva)`, icon: '🎯', correct: true },
               { label: `φ = +45° (prevalenza induttiva)`, icon: '🔄', correct: false },
@@ -1146,7 +1146,7 @@
         if (!response.ok) throw new Error(data.error || 'Salvataggio non riuscito.');
         saveStatus.textContent = '✅ Risultato salvato correttamente nella piattaforma.';
       } catch (error) {
-        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.';
+        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l\'insegnante.';
         console.error('Errore salvataggio triangolo_impedenze:', error);
       }
     }
