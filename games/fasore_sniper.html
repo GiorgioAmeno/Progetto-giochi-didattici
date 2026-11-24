@@ -691,7 +691,7 @@
               `Tensione: <span class="text-sky-300 font-bold">V̄ = 100∠0° V</span>`,
               `Impedenza: <span class="text-emerald-300 font-bold">Z = ${R} + j${X} - j${X} Ω</span>`
             ],
-            'Qual è l'angolo di fase della corrente Ī?',
+            'Qual è l\'angolo di fase della corrente Ī?',
             [
               { label: 'In fase con V̄ (∠Ī = 0°)', icon: '➡️', correct: true },
               { label: 'In ritardo di 45° (∠Ī = -45°)', icon: '↘️', correct: false },
@@ -746,7 +746,7 @@
               `Tensione: <span class="text-sky-300 font-bold">V̄ = 230∠0° V</span>`,
               `Impedenza: <span class="text-amber-300 font-bold">Z = 23∠+${phiZ}° Ω</span>`
             ],
-            'Qual è l'angolo di fase della corrente Ī?',
+            'Qual è l\'angolo di fase della corrente Ī?',
             [
               { label: `∠Ī = -${phiZ}° (corrente in ritardo)`, icon: '↘️', correct: true },
               { label: `∠Ī = +${phiZ}° (corrente in anticipo)`, icon: '↗️', correct: false },
@@ -763,7 +763,7 @@
               `Tensione: <span class="text-sky-300 font-bold">V̄ = 120∠0° V</span>`,
               `Impedenza: <span class="text-pink-300 font-bold">Z = 12∠-${phiZ}° Ω</span>`
             ],
-            'Qual è l'angolo di fase della corrente Ī?',
+            'Qual è l\'angolo di fase della corrente Ī?',
             [
               { label: `∠Ī = +${phiZ}° (corrente in anticipo)`, icon: '↗️', correct: true },
               { label: `∠Ī = -${phiZ}° (corrente in ritardo)`, icon: '↘️', correct: false },
@@ -843,7 +843,7 @@
               `Tensione: <span class="text-sky-300 font-bold">V̄ = 120∠+${vAng}° V</span>`,
               `Corrente misurata: <span class="text-pink-300 font-bold">Ī = 6∠+${iAng}° A</span>`
             ],
-            'Qual è l'impedenza Z = V̄ / Ī del bipolo?',
+            'Qual è l\'impedenza Z = V̄ / Ī del bipolo?',
             [
               { label: `Z = 20∠+${phiZ}° Ω (Ohmic-Induttiva)`, icon: '🧲', correct: true },
               { label: `Z = 20∠-${phiZ}° Ω (Ohmic-Capacitiva)`, icon: '🔋', correct: false },
@@ -1170,7 +1170,7 @@
         if (!response.ok) throw new Error(data.error || 'Salvataggio non riuscito.');
         saveStatus.textContent = '✅ Risultato salvato correttamente nella piattaforma.';
       } catch (error) {
-        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.';
+        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l\'insegnante.';
         console.error('Errore salvataggio fasore_sniper:', error);
       }
     }
