@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fasore Sniper — Sfasamento Tensione-Corrente</title>
+  <!-- Configurazione API della piattaforma -->
+  <script src="../config.js"></script>
+  <!-- Tailwind CSS per layout e utilità responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Google: Inter, JetBrains Mono, Press Start 2P -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      transition: background 0.4s ease, color 0.3s ease;
+    }
+
+    /* =====================================================================
+       TEMA 1: CYBERPUNK NEON
+       ===================================================================== */
+    body.theme-cyber {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #070913;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(255, 0, 170, 0.12) 0%, transparent 45%),
+        linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+      color: #e2f1f8;
+    }
+
+    .theme-cyber .panel-box {
+      background: rgba(12, 18, 34, 0.92);
+      border: 1.5px solid #00f3ff;
+      box-shadow: 0 0 18px rgba(0, 243, 255, 0.18), inset 0 0 12px rgba(0, 243, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .theme-cyber .visitor-box {
+      border-color: #ff00aa;
+      box-shadow: 0 0 18px rgba(255, 0, 170, 0.2), inset 0 0 12px rgba(255, 0, 170, 0.06);
+    }
+
+    .theme-cyber .branch-btn {
+      background: rgba(16, 26, 48, 0.95);
+      border: 1.5px solid rgba(0, 243, 255, 0.45);
+      border-radius: 8px;
+      color: #e2f1f8;
+      transition: all 0.18s ease;
+    }
+
+    .theme-cyber .branch-btn:active:not(:disabled) {
+      transform: scale(0.98);
+      border-color: #ff00aa;
+      box-shadow: 0 0 15px rgba(255, 0, 170, 0.5);
+    }
+
+    .theme-cyber .accent-title {
+      color: #00f3ff;
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    }
+
+    .theme-cyber .badge-pill {
+      background: rgba(0, 243, 255, 0.12);
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+      border-radius: 6px;
+    }
+
+    /* =====================================================================
+       TEMA 2: RETRO ARCADE 8-BIT
+       ===================================================================== */
+    body.theme-arcade {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #1a103c;
+      background-image: radial-gradient(#2c1b63 2px, transparent 2px);
+      background-size: 20px 20px;
+      color: #fff8e7;
+    }
+
+    .theme-arcade .arcade-font {
+      font-family: 'Press Start 2P', cursive;
+      letter-spacing: -0.5px;
+    }
+
+    .theme-arcade .panel-box {
+      background: #241654;
+      border: 4px solid #ffcc00;
+      box-shadow: 5px 5px 0px #0d0722;
+      border-radius: 4px;
+    }
+
+    .theme-arcade .visitor-box {
+      border-color: #ff4d6d;
+      box-shadow: 5px 5px 0px #0d0722;
+    }
+
+    .theme-arcade .branch-btn {
+      background: #311f73;
+      border: 3px solid #4cc9f0;
+      box-shadow: 4px 4px 0px #0d0722;
+      border-radius: 4px;
+      color: #ffffff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .theme-arcade .branch-btn:active:not(:disabled) {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px #0d0722;
+      border-color: #ffcc00;
+    }
+
+    .theme-arcade .accent-title {
+      color: #ffcc00;
+      text-shadow: 3px 3px 0px #d90429;
+    }
+
+    .theme-arcade .badge-pill {
+      background: #d90429;
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      border-radius: 2px;
+    }
+
+    /* =====================================================================
+       TEMA 3: MODERN GLASSMORPHISM
+       ===================================================================== */
+    body.theme-glass {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 38%, #311042 75%, #0f172a 100%);
+      background-attachment: fixed;
+      color: #f8fafc;
+    }
+
+    .theme-glass .code-font {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .theme-glass .panel-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+    }
+
+    .theme-glass .visitor-box {
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.14), rgba(168, 85, 247, 0.14));
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .theme-glass .branch-btn {
+      background: rgba(255, 255, 255, 0.09);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      color: #f8fafc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .theme-glass .branch-btn:active:not(:disabled) {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: #38bdf8;
+    }
+
+    .theme-glass .accent-title {
+      background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .theme-glass .badge-pill {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      border-radius: 9999px;
+    }
+
+    /* Stati risposta */
+    .branch-correct {
+      background: rgba(16, 185, 129, 0.28) !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .branch-wrong {
+      background: rgba(239, 68, 68, 0.28) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.45) !important;
+      animation: shake 0.35s ease-in-out;
+    }
+
+    .branch-dimmed {
+      opacity: 0.45;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .animate-pop {
+      animation: popIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .theme-pill-active {
+      outline: 2px solid #ffffff;
+      transform: scale(1.04);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body class="theme-cyber flex flex-col items-center justify-start px-3 py-3 sm:py-6">
+
+  <!-- CONTENITORE PRINCIPALE MOBILE-FIRST -->
+  <main class="w-full max-w-md flex flex-col gap-3 pb-8">
+
+    <!-- BARRA SUPERIORE PIATTAFORMA -->
+    <nav class="flex items-center justify-between gap-2 px-1 text-xs">
+      <a href="../index.html"
+         class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 font-bold transition">
+        ← Esci
+      </a>
+      <span id="studentBanner" class="opacity-85 font-semibold truncate">
+        Verifica sessione…
+      </span>
+    </nav>
+
+    <!-- HEADER + SELETTORE 3 TEMI GRAFICI -->
+    <header class="panel-box p-3 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h1 id="mainTitle" class="text-base sm:text-lg font-extrabold tracking-tight accent-title">
+            FASORE SNIPER
+          </h1>
+          <p class="text-[11px] opacity-75">Sfasamento tra Tensione V̄ e Corrente Ī in AC</p>
+        </div>
+        <button id="timerToggleBtn" onclick="toggleTimerMode()" 
+                class="badge-pill px-2.5 py-1.5 text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+          <span id="timerIcon">⏱️</span>
+          <span id="timerLabel">Timer: OFF</span>
+        </button>
+      </div>
+
+      <!-- Barra Switch 3 Versioni Grafiche -->
+      <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-white/10" role="group" aria-label="Scegli tema grafico">
+        <button onclick="setTheme('cyber')" id="btn-theme-cyber"
+                class="theme-pill-active py-1.5 px-2 rounded-lg text-[11px] font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-400/50 transition">
+          ⚡ Cyber Neon
+        </button>
+        <button onclick="setTheme('arcade')" id="btn-theme-arcade"
+                class="py-1.5 px-2 rounded-lg text-[11px] font-bold bg-purple-950/90 text-yellow-300 border border-yellow-400/50 transition">
+          🕹️ 8-Bit Arcade
+        </button>
+        <button onclick="setTheme('glass')" id="btn-theme-glass"
+                class="py-1.5 px-2 rounded-lg text-[11px] font-bold bg-indigo-900/70 text-pink-200 border border-pink-300/40 transition">
+          💎 Glass UI
+        </button>
+      </div>
+    </header>
+
+    <!-- BARRA STATISTICHE -->
+    <section id="hudSection" class="hidden panel-box px-3 py-2 flex items-center justify-between text-xs sm:text-sm">
+      <div class="flex items-center gap-1" aria-label="Vite rimaste">
+        <span id="livesDisplay" class="tracking-widest text-sm">❤️❤️❤️</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span id="progressBadge" class="badge-pill px-2 py-0.5 text-[11px] font-bold">
+          Lv.1/3 • 1/12
+        </span>
+      </div>
+      <div class="flex items-center gap-2 font-bold">
+        <span class="text-sky-300 text-xs" id="elapsedDisplay">00:00</span>
+        <span class="text-emerald-400">PT: <span id="scoreDisplay">0</span></span>
+      </div>
+    </section>
+
+    <!-- BARRA TIMER RISPOSTA -->
+    <div id="timerBarContainer" class="hidden w-full h-2.5 rounded-full bg-black/40 overflow-hidden border border-white/15">
+      <div id="timerBarFill" class="h-full bg-gradient-to-r from-emerald-400 via-yellow-400 to-rose-500 transition-all duration-100" style="width: 100%;"></div>
+    </div>
+
+    <!-- =====================================================================
+         SCHERMATA INIZIALE
+         ===================================================================== -->
+    <section id="startScreen" class="panel-box p-4 flex flex-col gap-3.5 animate-pop">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl bg-black/35 p-2.5 rounded-xl border border-white/15">🎯</div>
+        <div>
+          <span class="badge-pill px-2 py-0.5 text-[10px] font-bold uppercase">Elettrotecnica AC</span>
+          <h2 id="welcomeHeading" class="font-extrabold text-base sm:text-lg mt-0.5 leading-tight">Benvenuto al Radar Fasoriale!</h2>
+        </div>
+      </div>
+
+      <p class="text-xs sm:text-sm opacity-90 leading-relaxed">
+        In regime sinusoidale un'impedenza <strong>Z = |Z|∠φ</strong> determina di quanto la corrente <strong>Ī</strong> è sfasata rispetto alla tensione <strong>V̄</strong> (ricorda: la rotazione positiva dei fasori è <strong>antioraria</strong>!).
+      </p>
+
+      <!-- Regola d'oro -->
+      <div class="bg-black/45 rounded-xl p-3 border border-white/10 space-y-1.5">
+        <div class="text-xs font-extrabold text-amber-300 flex items-center gap-1.5">
+          <span>⚡</span>
+          <span>REGOLA D'ORO: φ = φ_V − φ_I</span>
+        </div>
+        <p class="text-xs opacity-85 leading-relaxed">
+          • <strong>Carico Induttivo (φ &gt; 0):</strong> Ī è in <strong>ritardo</strong> rispetto a V̄ (angolo di Ī più piccolo, senso orario).<br>
+          • <strong>Carico Capacitivo (φ &lt; 0):</strong> Ī è in <strong>anticipo</strong> rispetto a V̄ (angolo di Ī più grande, senso antiorario).
+        </p>
+      </div>
+
+      <!-- Mini-Legenda Carichi Puri -->
+      <div class="bg-black/45 rounded-xl p-3 border border-white/10">
+        <div class="text-xs font-extrabold text-cyan-300 mb-2">🧭 Sfasamenti Elementari</div>
+        <div class="grid grid-cols-2 gap-1.5 text-[11px] code-font">
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-emerald-400 font-bold">R (φ = 0°)</span> → In fase
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-amber-400 font-bold">L (φ = +90°)</span> → Ī ritarda 90°
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-pink-400 font-bold">C (φ = -90°)</span> → Ī anticipa 90°
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-sky-400 font-bold">Ī = V̄ / Z</span> → ∠Ī = ∠V̄ − ∠Z
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/5 rounded-xl p-2.5 border border-white/10 text-xs flex items-center justify-between">
+        <div>
+          <div class="font-bold">🎯 Sfida Standard: 12 Domande</div>
+          <div class="text-[11px] opacity-75">3 Livelli (4 dom. ciascuno) • +300 pt per vita rimasta</div>
+        </div>
+        <span class="text-lg">❤️❤️❤️</span>
+      </div>
+
+      <button id="startBtn" onclick="startGame()"
+              class="w-full py-3.5 rounded-xl font-extrabold text-sm sm:text-base uppercase tracking-wider bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-slate-950 shadow-lg active:scale-98 transition">
+        🚀 Inizia Sfida (12 Domande)
+      </button>
+    </section>
+
+    <!-- =====================================================================
+         SCHERMATA DI GIOCO PRINCIPALE
+         ===================================================================== -->
+    <div id="gameScreen" class="hidden flex flex-col gap-3">
+
+      <!-- 1. SCHEDA OSCILLOSCOPIO FASORIALE + DATI CIRCUITO -->
+      <section class="panel-box visitor-box p-3.5 animate-pop" id="visitorCard">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span id="visitorAvatar" class="text-2xl bg-black/30 p-1.5 rounded-lg border border-white/10">📡</span>
+            <div>
+              <span class="text-[10px] uppercase tracking-wider opacity-70 block">Domanda <span id="roundNumber">1</span> di 12</span>
+              <h2 id="visitorName" class="font-bold text-sm sm:text-base leading-tight">Carico Induttivo Puro</h2>
+            </div>
+          </div>
+          <span id="difficultyTag" class="badge-pill px-2 py-0.5 text-[10px] font-bold uppercase">
+            Livello 1/3
+          </span>
+        </div>
+
+        <!-- Diagramma Fasoriale SVG Dinamico -->
+        <div class="bg-black/60 rounded-xl p-2 border border-white/10 flex flex-col items-center justify-center mb-2.5">
+          <svg id="phasorSvg" viewBox="0 0 260 155" class="w-full max-w-[260px] h-auto select-none" aria-label="Diagramma fasoriale"></svg>
+          <div class="flex items-center gap-4 text-[10px] mt-1 opacity-85">
+            <span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Tensione V̄</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-full bg-pink-400"></span> Corrente Ī (?)</span>
+            <span class="opacity-65">↺ Antiorario (+)</span>
+          </div>
+        </div>
+
+        <!-- Dati Numerici -->
+        <div class="bg-black/55 rounded-lg p-2.5 border border-white/10 code-font text-xs sm:text-sm leading-relaxed">
+          <div id="variablesContainer" class="space-y-1"></div>
+        </div>
+      </section>
+
+      <!-- 2. OPZIONI DI RISPOSTA -->
+      <section class="panel-box p-3.5 flex flex-col gap-2.5" id="codeSection">
+        <div class="flex items-center justify-between">
+          <span id="questionPrompt" class="text-xs font-bold uppercase tracking-wider opacity-85">
+            👇 Individua la fase/posizione della corrente Ī:
+          </span>
+        </div>
+
+        <div id="branchesContainer" class="grid grid-cols-1 gap-2"></div>
+      </section>
+
+      <!-- 3. PANNELLO SPIEGAZIONE DIDATTICA -->
+      <section id="feedbackPanel" class="hidden panel-box p-3.5 animate-pop border-2">
+        <div class="flex items-start gap-2.5">
+          <span id="feedbackIcon" class="text-2xl leading-none mt-0.5">✅</span>
+          <div class="flex-1 min-w-0">
+            <h3 id="feedbackTitle" class="font-extrabold text-sm sm:text-base">Esatto!</h3>
+            <p id="feedbackExplanation" class="text-xs sm:text-sm opacity-90 mt-1 leading-relaxed"></p>
+          </div>
+        </div>
+        <button id="nextBtn" onclick="nextRound()"
+                class="mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg active:scale-98 transition">
+          Prossima Domanda ➜
+        </button>
+      </section>
+
+    </div>
+
+    <!-- =====================================================================
+         SCHERMATA FINE PARTITA
+         ===================================================================== -->
+    <section id="gameOverScreen" class="hidden panel-box p-5 text-center flex flex-col items-center gap-3 animate-pop">
+      <div id="endIcon" class="text-4xl">🏆</div>
+      <h2 id="endTitle" class="text-xl font-extrabold accent-title">SFIDA COMPLETATA!</h2>
+      <p id="endSubtitle" class="text-xs sm:text-sm opacity-85">
+        Hai completato tutte le 12 domande sui fasori!
+      </p>
+
+      <div class="w-full bg-black/45 rounded-xl p-3.5 border border-white/15 flex flex-col gap-2.5 text-xs sm:text-sm">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Risposte corrette:</span>
+          <span id="endQuestionsCount" class="font-bold">12 / 12</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Tempo impiegato:</span>
+          <span id="endDurationText" class="font-bold text-sky-300">00:00</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Punteggio risposte:</span>
+          <span id="finalBaseScore" class="font-extrabold text-cyan-300">0 pt</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80 text-left">
+            Vite residue (<span id="endHeartsVisual">❤️❤️❤️</span>):
+          </span>
+          <span id="endLivesBonus" class="font-extrabold text-amber-300">3 × 300 = +900 pt</span>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <span class="font-extrabold text-sm sm:text-base uppercase tracking-wide">Punteggio Totale:</span>
+          <span id="finalTotalScore" class="text-2xl font-extrabold text-emerald-400">0 pt</span>
+        </div>
+      </div>
+
+      <p id="saveStatus" class="text-xs font-bold px-3 py-2 rounded-lg bg-white/5 border border-white/10 w-full">
+        In attesa…
+      </p>
+
+      <div class="w-full flex flex-col gap-2 mt-1">
+        <button onclick="startGame()"
+                class="w-full py-3.5 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-400 hover:bg-emerald-300 text-slate-950 shadow-lg active:scale-98 transition">
+          🔄 Rigioca (Nuove 12 Domande)
+        </button>
+        <button onclick="backToStartScreen()"
+                class="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white/10 hover:bg-white/15 border border-white/15 transition">
+          📖 Torna alla Guida Iniziale
+        </button>
+        <a href="../index.html"
+           class="w-full py-2 text-xs opacity-75 hover:opacity-100 underline transition">
+          Torna alla pagina di accesso
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const API = window.APP_CONFIG?.API_BASE?.replace(/\/$/, "");
+    const token = sessionStorage.getItem("studentGameToken");
+    let studentName = "Studente";
+
+    const TOTAL_QUESTIONS = 12;
+    const QUESTIONS_PER_LEVEL = 4;
+    const POINTS_PER_CORRECT = 100;
+    const BONUS_PER_LIFE = 300;
+
+    const state = {
+      theme: 'cyber',
+      isPlaying: false,
+      baseScore: 0,
+      lives: 3,
+      round: 1,
+      correctAnswers: 0,
+      deck: [],
+      timerEnabled: false,
+      timerSeconds: 18,
+      timerRemaining: 18,
+      timerInterval: null,
+      startedAt: 0,
+      elapsedInterval: null,
+      answered: false,
+      currentChallenge: null
+    };
+
+    const formatTime = seconds =>
+      String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0");
+
+    const elapsedSeconds = () => Math.max(0, Math.floor((Date.now() - state.startedAt) / 1000));
+
+    function setTheme(themeName) {
+      state.theme = themeName;
+      document.body.className = `theme-${themeName} flex flex-col items-center justify-start px-3 py-3 sm:py-6`;
+
+      ['cyber', 'arcade', 'glass'].forEach(t => {
+        const btn = document.getElementById(`btn-theme-${t}`);
+        if (t === themeName) btn.classList.add('theme-pill-active');
+        else btn.classList.remove('theme-pill-active');
+      });
+
+      const mainTitle = document.getElementById('mainTitle');
+      if (themeName === 'arcade') {
+        mainTitle.classList.add('arcade-font', 'text-xs', 'sm:text-sm');
+        mainTitle.classList.remove('text-base', 'sm:text-lg');
+      } else {
+        mainTitle.classList.remove('arcade-font', 'text-xs', 'sm:text-sm');
+        mainTitle.classList.add('text-base', 'sm:text-lg');
+      }
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function normAngle(deg) {
+      let a = deg % 360;
+      if (a > 180) a -= 360;
+      if (a <= -180) a += 360;
+      return a;
+    }
+
+    function fmtAngle(deg) {
+      const a = normAngle(deg);
+      return a > 0 ? `+${a}°` : `${a}°`;
+    }
+
+    /**
+     * Disegna il radar fasoriale SVG
+     * showCurrent: true solo dopo la risposta per svelare il fasore I
+     */
+    function renderPhasorSVG(vAngleDeg, iAngleDeg, showCurrent = false) {
+      const svg = document.getElementById('phasorSvg');
+      const cx = 130, cy = 78, r = 56;
+      const vRad = (-vAngleDeg * Math.PI) / 180;
+      const vx = cx + r * Math.cos(vRad);
+      const vy = cy + r * Math.sin(vRad);
+
+      const iRad = (-iAngleDeg * Math.PI) / 180;
+      const ix = cx + (r * 0.78) * Math.cos(iRad);
+      const iy = cy + (r * 0.78) * Math.sin(iRad);
+
+      let currentMarkup = '';
+      if (showCurrent) {
+        currentMarkup = `
+          <line x1="${cx}" y1="${cy}" x2="${ix.toFixed(1)}" y2="${iy.toFixed(1)}"
+                stroke="#f472b6" stroke-width="3.5" stroke-linecap="round" marker-end="url(#arrowI)"/>
+          <text x="${(cx + (r * 0.95) * Math.cos(iRad)).toFixed(1)}"
+                y="${(cy + (r * 0.95) * Math.sin(iRad)).toFixed(1)}"
+                fill="#f472b6" font-size="11" font-weight="bold" text-anchor="middle" dominant-baseline="middle">Ī</text>
+        `;
+      } else {
+        // Settori tratteggiati per guidare l'occhio senza svelare la soluzione
+        currentMarkup = `
+          <circle cx="${cx}" cy="${cy}" r="${(r * 0.78).toFixed(1)}" fill="none" stroke="rgba(244,114,182,0.22)" stroke-dasharray="3 3" stroke-width="1"/>
+        `;
+      }
+
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrowV" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+          </marker>
+          <marker id="arrowI" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#f472b6"/>
+          </marker>
+        </defs>
+        <!-- Cerchio goniometrico e assi -->
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
+        <line x1="${cx - r - 14}" y1="${cy}" x2="${cx + r + 14}" y2="${cy}" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <line x1="${cx}" y1="${cy - r - 12}" x2="${cx}" y2="${cy + r + 12}" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <text x="${cx + r + 18}" y="${cy + 3}" fill="rgba(255,255,255,0.5)" font-size="9">0°</text>
+        <text x="${cx}" y="${cy - r - 15}" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle">+90°</text>
+        <text x="${cx}" y="${cy + r + 21}" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle">-90°</text>
+        <text x="${cx - r - 22}" y="${cy + 3}" fill="rgba(255,255,255,0.5)" font-size="9">180°</text>
+
+        <!-- Fasore Tensione V -->
+        <line x1="${cx}" y1="${cy}" x2="${vx.toFixed(1)}" y2="${vy.toFixed(1)}"
+              stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" marker-end="url(#arrowV)"/>
+        <text x="${(cx + (r + 13) * Math.cos(vRad)).toFixed(1)}"
+              y="${(cy + (r + 13) * Math.sin(vRad)).toFixed(1)}"
+              fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle" dominant-baseline="middle">V̄</text>
+
+        <!-- Fasore Corrente I -->
+        ${currentMarkup}
+        <circle cx="${cx}" cy="${cy}" r="3" fill="#ffffff"/>
+      `;
+    }
+
+    function buildStandardDeck() {
+      // LIVELLO 1: Elementi puri (R, L, C) e risonanza con V̄ a 0°
+      const level1Pool = [
+        () => {
+          const R = pickRandom([10, 20, 50]);
+          const V = pickRandom([100, 200, 230]);
+          return makeChallenge('⚡', 'Resistore Puro (R)', 1, 0, 0,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = ${V}∠0° V</span>`,
+              `Impedenza: <span class="text-emerald-300 font-bold">Z = R = ${R} Ω</span> (φ = 0°)`
+            ],
+            'Qual è lo sfasamento della corrente Ī rispetto a V̄?',
+            [
+              { label: 'In fase con V̄ (∠Ī = 0°)', icon: '➡️', correct: true },
+              { label: 'In ritardo di 90° (∠Ī = -90°)', icon: '⬇️', correct: false },
+              { label: 'In anticipo di 90° (∠Ī = +90°)', icon: '⬆️', correct: false },
+              { label: 'In opposizione di fase (∠Ī = 180°)', icon: '⬅️', correct: false }
+            ],
+            `Un resistore puro ha impedenza reale (φ = 0°). Poiché ∠Ī = ∠V̄ − φ = 0° − 0° = 0°, tensione e corrente sono perfettamente in fase.`
+          );
+        },
+        () => {
+          const XL = pickRandom([15, 25, 40]);
+          const V = pickRandom([100, 120, 240]);
+          return makeChallenge('🧲', 'Induttore Ideale (L)', 1, 0, -90,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = ${V}∠0° V</span>`,
+              `Impedenza: <span class="text-amber-300 font-bold">Z = +j${XL} Ω</span> (φ = +90°)`
+            ],
+            'Dove si posiziona il fasore della corrente Ī?',
+            [
+              { label: 'In ritardo di 90° (∠Ī = -90°)', icon: '⬇️', correct: true },
+              { label: 'In anticipo di 90° (∠Ī = +90°)', icon: '⬆️', correct: false },
+              { label: 'In fase con V̄ (∠Ī = 0°)', icon: '➡️', correct: false },
+              { label: 'In ritardo di 45° (∠Ī = -45°)', icon: '↘️', correct: false }
+            ],
+            `In un induttore puro Z = +jX_L = ${XL}∠+90° Ω. La corrente ritarda di 90° rispetto alla tensione: ∠Ī = 0° − 90° = -90°.`
+          );
+        },
+        () => {
+          const XC = pickRandom([20, 30, 50]);
+          const V = pickRandom([100, 150, 230]);
+          return makeChallenge('🔋', 'Condensatore Ideale (C)', 1, 0, 90,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = ${V}∠0° V</span>`,
+              `Impedenza: <span class="text-pink-300 font-bold">Z = -j${XC} Ω</span> (φ = -90°)`
+            ],
+            'Dove si posiziona il fasore della corrente Ī?',
+            [
+              { label: 'In anticipo di 90° (∠Ī = +90°)', icon: '⬆️', correct: true },
+              { label: 'In ritardo di 90° (∠Ī = -90°)', icon: '⬇️', correct: false },
+              { label: 'In fase con V̄ (∠Ī = 0°)', icon: '➡️', correct: false },
+              { label: 'In anticipo di 45° (∠Ī = +45°)', icon: '↗️', correct: false }
+            ],
+            `In un condensatore puro Z = -jX_C = ${XC}∠-90° Ω. La corrente anticipa di 90° la tensione: ∠Ī = 0° − (-90°) = +90°.`
+          );
+        },
+        () => {
+          const R = pickRandom([10, 12, 20]);
+          const X = pickRandom([15, 25, 30]);
+          return makeChallenge('🎛️', 'Serie RLC in Risonanza', 1, 0, 0,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 100∠0° V</span>`,
+              `Impedenza: <span class="text-emerald-300 font-bold">Z = ${R} + j${X} - j${X} Ω</span>`
+            ],
+            'Qual è l'angolo di fase della corrente Ī?',
+            [
+              { label: 'In fase con V̄ (∠Ī = 0°)', icon: '➡️', correct: true },
+              { label: 'In ritardo di 45° (∠Ī = -45°)', icon: '↘️', correct: false },
+              { label: 'In anticipo di 45° (∠Ī = +45°)', icon: '↗️', correct: false },
+              { label: 'In ritardo di 90° (∠Ī = -90°)', icon: '⬇️', correct: false }
+            ],
+            `Le reattanze +j${X} Ω e -j${X} Ω si annullano! Resta Z = ${R} Ω puramente resistiva (φ = 0°), quindi Ī è in fase con V̄.`
+          );
+        }
+      ];
+
+      // LIVELLO 2: Carichi RL / RC con angoli notevoli (30°, 45°, 60°) e quadranti
+      const level2Pool = [
+        () => {
+          const R = pickRandom([10, 20, 50]);
+          return makeChallenge('🌀', 'Carico RL Simmetrico', 2, 0, -45,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 100∠0° V</span>`,
+              `Impedenza: <span class="text-amber-300 font-bold">Z = ${R} + j${R} Ω</span>`
+            ],
+            'In quale direzione punta il fasore Ī?',
+            [
+              { label: '4° Quadrante: ∠Ī = -45° (ritardo)', icon: '↘️', correct: true },
+              { label: '1° Quadrante: ∠Ī = +45° (anticipo)', icon: '↗️', correct: false },
+              { label: '4° Quadrante: ∠Ī = -90°', icon: '⬇️', correct: false },
+              { label: '2° Quadrante: ∠Ī = +135°', icon: '↖️', correct: false }
+            ],
+            `Poiché R = X_L = ${R} Ω, l'angolo dell'impedenza è φ = +45°. Quindi ∠Ī = 0° − 45° = -45° (quarto quadrante, in ritardo).`
+          );
+        },
+        () => {
+          const R = pickRandom([15, 25, 40]);
+          return makeChallenge('💠', 'Carico RC Simmetrico', 2, 0, 45,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 100∠0° V</span>`,
+              `Impedenza: <span class="text-pink-300 font-bold">Z = ${R} - j${R} Ω</span>`
+            ],
+            'In quale direzione punta il fasore Ī?',
+            [
+              { label: '1° Quadrante: ∠Ī = +45° (anticipo)', icon: '↗️', correct: true },
+              { label: '4° Quadrante: ∠Ī = -45° (ritardo)', icon: '↘️', correct: false },
+              { label: '1° Quadrante: ∠Ī = +90°', icon: '⬆️', correct: false },
+              { label: '3° Quadrante: ∠Ī = -135°', icon: '↙️', correct: false }
+            ],
+            `Poiché R = X_C = ${R} Ω con segno negativo, φ = -45°. Quindi ∠Ī = 0° − (-45°) = +45° (primo quadrante, in anticipo).`
+          );
+        },
+        () => {
+          const phiZ = pickRandom([30, 60]);
+          return makeChallenge('⚙️', 'Motore Monofase (RL)', 2, 0, -phiZ,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 230∠0° V</span>`,
+              `Impedenza: <span class="text-amber-300 font-bold">Z = 23∠+${phiZ}° Ω</span>`
+            ],
+            'Qual è l'angolo di fase della corrente Ī?',
+            [
+              { label: `∠Ī = -${phiZ}° (corrente in ritardo)`, icon: '↘️', correct: true },
+              { label: `∠Ī = +${phiZ}° (corrente in anticipo)`, icon: '↗️', correct: false },
+              { label: `∠Ī = -${90 - phiZ}°`, icon: '🧭', correct: false },
+              { label: `∠Ī = 0°`, icon: '➡️', correct: false }
+            ],
+            `Con impedenza polare Z = |Z|∠+${phiZ}°, la corrente ha fase ∠Ī = ∠V̄ − φ = 0° − (+${phiZ}°) = -${phiZ}°.`
+          );
+        },
+        () => {
+          const phiZ = pickRandom([30, 60]);
+          return makeChallenge('🔌', 'Filtro Capacitivo (RC)', 2, 0, phiZ,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 120∠0° V</span>`,
+              `Impedenza: <span class="text-pink-300 font-bold">Z = 12∠-${phiZ}° Ω</span>`
+            ],
+            'Qual è l'angolo di fase della corrente Ī?',
+            [
+              { label: `∠Ī = +${phiZ}° (corrente in anticipo)`, icon: '↗️', correct: true },
+              { label: `∠Ī = -${phiZ}° (corrente in ritardo)`, icon: '↘️', correct: false },
+              { label: `∠Ī = +${90 - phiZ}°`, icon: '🧭', correct: false },
+              { label: `∠Ī = 180°`, icon: '⬅️', correct: false }
+            ],
+            `Con Z = 12∠-${phiZ}° Ω, applicando ∠Ī = ∠V̄ − φ otteniamo: 0° − (-${phiZ}°) = +${phiZ}° (in anticipo).`
+          );
+        }
+      ];
+
+      // LIVELLO 3: V̄ con fase iniziale non nulla (∠V̄ ≠ 0°) e calcolo completo di Ī = V̄ / Z
+      const level3Pool = [
+        () => {
+          const vAng = pickRandom([30, 45, 60]);
+          const zAng = pickRandom([30, 45]);
+          const iAng = vAng - zAng;
+          return makeChallenge('🚀', 'Linea Trifase Squilibrata', 3, vAng, iAng,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 200∠+${vAng}° V</span>`,
+              `Impedenza: <span class="text-amber-300 font-bold">Z = 20∠+${zAng}° Ω</span>`
+            ],
+            'Calcola il fasore della corrente Ī = V̄ / Z:',
+            [
+              { label: `Ī = 10∠${fmtAngle(iAng)} A`, icon: '🎯', correct: true },
+              { label: `Ī = 10∠${fmtAngle(vAng + zAng)} A`, icon: '⚠️', correct: false },
+              { label: `Ī = 10∠${fmtAngle(zAng - vAng)} A`, icon: '🔄', correct: false },
+              { label: `Ī = 4000∠${fmtAngle(iAng)} A`, icon: '✖️', correct: false }
+            ],
+            `Nella divisione tra fasori si dividono i moduli (200 / 20 = 10 A) e si SOTTRAGGONO gli angoli: ∠Ī = (+${vAng}°) − (+${zAng}°) = ${fmtAngle(iAng)}.`
+          );
+        },
+        () => {
+          const vAng = pickRandom([20, 30, 40]);
+          const zAng = -pickRandom([30, 45, 50]);
+          const iAng = vAng - zAng;
+          return makeChallenge('🛰️', 'Carico Capacitivo Sfasato', 3, vAng, iAng,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 100∠+${vAng}° V</span>`,
+              `Impedenza: <span class="text-pink-300 font-bold">Z = 25∠${zAng}° Ω</span>`
+            ],
+            'Calcola il fasore della corrente Ī = V̄ / Z:',
+            [
+              { label: `Ī = 4∠${fmtAngle(iAng)} A`, icon: '🎯', correct: true },
+              { label: `Ī = 4∠${fmtAngle(vAng + zAng)} A`, icon: '⚠️', correct: false },
+              { label: `Ī = 4∠${fmtAngle(-iAng)} A`, icon: '🔄', correct: false },
+              { label: `Ī = 25∠${fmtAngle(iAng)} A`, icon: '✖️', correct: false }
+            ],
+            `Attenzione al doppio segno meno! ∠Ī = ∠V̄ − ∠Z = (+${vAng}°) − (${zAng}°) = +${vAng}° + ${Math.abs(zAng)}° = ${fmtAngle(iAng)}, modulo 100 / 25 = 4 A.`
+          );
+        },
+        () => {
+          const vAng = -pickRandom([30, 45]);
+          const zAng = pickRandom([45, 60]);
+          const iAng = vAng - zAng;
+          return makeChallenge('⚡', 'Nodo Induttivo Negativo', 3, vAng, iAng,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 150∠${vAng}° V</span>`,
+              `Impedenza: <span class="text-amber-300 font-bold">Z = 30∠+${zAng}° Ω</span>`
+            ],
+            'Calcola il fasore della corrente Ī = V̄ / Z:',
+            [
+              { label: `Ī = 5∠${fmtAngle(iAng)} A`, icon: '🎯', correct: true },
+              { label: `Ī = 5∠${fmtAngle(vAng + zAng)} A`, icon: '⚠️', correct: false },
+              { label: `Ī = 5∠${fmtAngle(-vAng - zAng)} A`, icon: '🔄', correct: false },
+              { label: `Ī = 5∠0° A`, icon: '➡️', correct: false }
+            ],
+            `Modulo: 150 / 30 = 5 A. Fase: ∠Ī = (${vAng}°) − (+${zAng}°) = ${fmtAngle(iAng)}. La corrente ruota ulteriormente in senso orario.`
+          );
+        },
+        () => {
+          const vAng = pickRandom([90, 120]);
+          const iAng = pickRandom([30, 60]);
+          const phiZ = vAng - iAng;
+          return makeChallenge('🔬', 'Identificazione Impedenza da V̄ e Ī', 3, vAng, iAng,
+            [
+              `Tensione: <span class="text-sky-300 font-bold">V̄ = 120∠+${vAng}° V</span>`,
+              `Corrente misurata: <span class="text-pink-300 font-bold">Ī = 6∠+${iAng}° A</span>`
+            ],
+            'Qual è l'impedenza Z = V̄ / Ī del bipolo?',
+            [
+              { label: `Z = 20∠+${phiZ}° Ω (Ohmic-Induttiva)`, icon: '🧲', correct: true },
+              { label: `Z = 20∠-${phiZ}° Ω (Ohmic-Capacitiva)`, icon: '🔋', correct: false },
+              { label: `Z = 20∠+${vAng + iAng}° Ω`, icon: '⚠️', correct: false },
+              { label: `Z = 720∠+${phiZ}° Ω`, icon: '✖️', correct: false }
+            ],
+            `Z = V̄ / Ī → Modulo: 120 / 6 = 20 Ω. Angolo: φ = ∠V̄ − ∠Ī = (+${vAng}°) − (+${iAng}°) = +${phiZ}°. Poiché φ > 0, il carico è Ohmic-Induttivo.`
+          );
+        }
+      ];
+
+      return [
+        ...shuffleArray(level1Pool).map(fn => fn()),
+        ...shuffleArray(level2Pool).map(fn => fn()),
+        ...shuffleArray(level3Pool).map(fn => fn())
+      ];
+    }
+
+    function makeChallenge(avatar, name, level, vAngle, iAngle, dataLines, prompt, rawOptions, explanation) {
+      const options = shuffleArray(rawOptions);
+      const correctIndex = options.findIndex(o => o.correct);
+      return {
+        avatar,
+        name,
+        level,
+        vAngle,
+        iAngle,
+        dataLines,
+        prompt,
+        options,
+        correctIndex,
+        explanationHtml: explanation
+      };
+    }
+
+    function renderChallenge() {
+      state.answered = false;
+      const challenge = state.deck[state.round - 1];
+      state.currentChallenge = challenge;
+
+      const currentLevel = Math.ceil(state.round / QUESTIONS_PER_LEVEL);
+
+      document.getElementById('roundNumber').textContent = state.round;
+      document.getElementById('visitorAvatar').textContent = challenge.avatar;
+      document.getElementById('visitorName').textContent = challenge.name;
+      document.getElementById('difficultyTag').textContent = `Livello ${currentLevel}/3`;
+      document.getElementById('progressBadge').textContent = `Lv.${currentLevel}/3 • ${state.round}/${TOTAL_QUESTIONS}`;
+      document.getElementById('questionPrompt').textContent = `👇 ${challenge.prompt}`;
+
+      const visitorCard = document.getElementById('visitorCard');
+      visitorCard.classList.remove('animate-pop');
+      void visitorCard.offsetWidth;
+      visitorCard.classList.add('animate-pop');
+
+      // Disegna fasore V (nascondendo I finché non risponde, tranne nell'ultimo quesito in cui I è dato)
+      const isLastIdentification = challenge.name.includes('Identificazione');
+      renderPhasorSVG(challenge.vAngle, challenge.iAngle, isLastIdentification);
+
+      document.getElementById('variablesContainer').innerHTML = challenge.dataLines
+        .map(line => `<div>${line}</div>`)
+        .join('');
+
+      const branchesContainer = document.getElementById('branchesContainer');
+      branchesContainer.innerHTML = challenge.options.map((opt, idx) => `
+        <button id="branch-btn-${idx}" onclick="handleBranchChoice(${idx})"
+                class="branch-btn w-full text-left p-3.5 flex items-center justify-between gap-2 cursor-pointer">
+          <span class="font-bold text-sm sm:text-base flex items-center gap-2.5">
+            <span class="text-lg">${opt.icon}</span>
+            <span>${opt.label}</span>
+          </span>
+          <span class="text-[10px] uppercase tracking-wider opacity-60 font-bold px-2 py-0.5 rounded bg-white/5 shrink-0">
+            Scegli
+          </span>
+        </button>
+      `).join('');
+
+      document.getElementById('feedbackPanel').classList.add('hidden');
+      resetAndStartTimer();
+    }
+
+    function handleBranchChoice(chosenIdx, isTimeout = false) {
+      if (state.answered) return;
+      state.answered = true;
+      stopTimer();
+
+      const challenge = state.currentChallenge;
+      const isCorrect = !isTimeout && (chosenIdx === challenge.correctIndex);
+
+      // Rivela il fasore corrente I sul grafico SVG!
+      renderPhasorSVG(challenge.vAngle, challenge.iAngle, true);
+
+      challenge.options.forEach((_, idx) => {
+        const btn = document.getElementById(`branch-btn-${idx}`);
+        btn.disabled = true;
+
+        if (idx === challenge.correctIndex) {
+          btn.classList.add('branch-correct');
+        } else if (idx === chosenIdx && !isCorrect) {
+          btn.classList.add('branch-wrong');
+        } else {
+          btn.classList.add('branch-dimmed');
+        }
+      });
+
+      const feedbackPanel = document.getElementById('feedbackPanel');
+      const feedbackIcon = document.getElementById('feedbackIcon');
+      const feedbackTitle = document.getElementById('feedbackTitle');
+      const feedbackExplanation = document.getElementById('feedbackExplanation');
+
+      if (isCorrect) {
+        state.correctAnswers += 1;
+        state.baseScore += POINTS_PER_CORRECT;
+
+        feedbackPanel.style.borderColor = '#10b981';
+        feedbackIcon.textContent = '✅';
+        feedbackTitle.textContent = `Centro Perfetto! (+${POINTS_PER_CORRECT} pt)`;
+        feedbackTitle.className = 'font-extrabold text-sm sm:text-base text-emerald-400';
+      } else {
+        state.lives = Math.max(0, state.lives - 1);
+
+        feedbackPanel.style.borderColor = '#ef4444';
+        feedbackIcon.textContent = isTimeout ? '⏰' : '❌';
+        feedbackTitle.textContent = isTimeout
+          ? 'Tempo Scaduto! (-1 Vita)'
+          : 'Fasore Fuori Bersaglio! (-1 Vita)';
+        feedbackTitle.className = 'font-extrabold text-sm sm:text-base text-rose-400';
+      }
+
+      feedbackExplanation.innerHTML = challenge.explanationHtml;
+      feedbackPanel.classList.remove('hidden');
+      updateHUD();
+
+      const isGameFinished = (state.lives <= 0) || (state.round >= TOTAL_QUESTIONS);
+      const nextBtn = document.getElementById('nextBtn');
+
+      if (isGameFinished) {
+        nextBtn.textContent = 'Vedi Riepilogo e Salva Risultato ➜';
+        nextBtn.className = state.lives > 0
+          ? 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg active:scale-98 transition'
+          : 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-rose-500 text-white shadow-lg active:scale-98 transition';
+      } else {
+        const nextLevel = Math.ceil((state.round + 1) / QUESTIONS_PER_LEVEL);
+        const currentLevel = Math.ceil(state.round / QUESTIONS_PER_LEVEL);
+        nextBtn.textContent = (nextLevel > currentLevel)
+          ? `Avanza al Livello ${nextLevel}/3 ➜`
+          : `Prossima Domanda (${state.round + 1}/${TOTAL_QUESTIONS}) ➜`;
+        nextBtn.className = 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg active:scale-98 transition';
+      }
+
+      setTimeout(() => {
+        feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
+
+    function nextRound() {
+      if (state.lives <= 0 || state.round >= TOTAL_QUESTIONS) {
+        showEndScreen();
+        return;
+      }
+      state.round += 1;
+      renderChallenge();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateHUD() {
+      const fullHearts = Math.max(0, state.lives);
+      const emptyHearts = Math.max(0, 3 - fullHearts);
+      document.getElementById('livesDisplay').textContent = '❤️'.repeat(fullHearts) + '🖤'.repeat(emptyHearts);
+      document.getElementById('scoreDisplay').textContent = state.baseScore;
+    }
+
+    function toggleTimerMode() {
+      state.timerEnabled = !state.timerEnabled;
+      const label = document.getElementById('timerLabel');
+      const barContainer = document.getElementById('timerBarContainer');
+
+      if (state.timerEnabled) {
+        label.textContent = 'Timer: ON';
+        if (state.isPlaying) {
+          barContainer.classList.remove('hidden');
+          if (!state.answered) resetAndStartTimer();
+        }
+      } else {
+        label.textContent = 'Timer: OFF';
+        barContainer.classList.add('hidden');
+        stopTimer();
+      }
+    }
+
+    function resetAndStartTimer() {
+      stopTimer();
+      if (!state.timerEnabled || !state.isPlaying) return;
+
+      state.timerRemaining = state.timerSeconds;
+      const fill = document.getElementById('timerBarFill');
+      fill.style.width = '100%';
+
+      state.timerInterval = setInterval(() => {
+        state.timerRemaining -= 0.1;
+        const pct = Math.max(0, (state.timerRemaining / state.timerSeconds) * 100);
+        fill.style.width = `${pct}%`;
+
+        if (state.timerRemaining <= 0) {
+          stopTimer();
+          handleBranchChoice(-1, true);
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function stopElapsedClock() {
+      if (state.elapsedInterval) {
+        clearInterval(state.elapsedInterval);
+        state.elapsedInterval = null;
+      }
+    }
+
+    function startGame() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = true;
+      state.baseScore = 0;
+      state.lives = 3;
+      state.round = 1;
+      state.correctAnswers = 0;
+      state.startedAt = Date.now();
+      state.deck = buildStandardDeck();
+
+      document.getElementById('elapsedDisplay').textContent = '00:00';
+      state.elapsedInterval = setInterval(() => {
+        document.getElementById('elapsedDisplay').textContent = formatTime(elapsedSeconds());
+      }, 500);
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('hudSection').classList.remove('hidden');
+      document.getElementById('gameScreen').classList.remove('hidden');
+
+      if (state.timerEnabled) {
+        document.getElementById('timerBarContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('timerBarContainer').classList.add('hidden');
+      }
+
+      updateHUD();
+      renderChallenge();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToStartScreen() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = false;
+      document.getElementById('hudSection').classList.add('hidden');
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('timerBarContainer').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function showEndScreen() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = false;
+
+      const duration = elapsedSeconds();
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('timerBarContainer').classList.add('hidden');
+
+      const completedAll = (state.lives > 0 && state.round >= TOTAL_QUESTIONS);
+      const livesBonus = state.lives * BONUS_PER_LIFE;
+      const totalScore = state.baseScore + livesBonus;
+
+      document.getElementById('endIcon').textContent = completedAll ? '🏆' : '🚨';
+      document.getElementById('endTitle').textContent = completedAll
+        ? 'SFIDA COMPLETATA!'
+        : 'VITE ESAURITE!';
+      document.getElementById('endSubtitle').textContent = completedAll
+        ? `Ottimo lavoro ${studentName}! Padroneggi lo sfasamento tra V̄ e Ī.`
+        : `${studentName}, hai esaurito le vite. Riprova per completare tutte le 12 domande!`;
+
+      document.getElementById('endQuestionsCount').textContent = `${state.correctAnswers} / ${TOTAL_QUESTIONS}`;
+      document.getElementById('endDurationText').textContent = formatTime(duration);
+      document.getElementById('finalBaseScore').textContent = `${state.baseScore} pt`;
+
+      const fullHearts = Math.max(0, state.lives);
+      const emptyHearts = Math.max(0, 3 - fullHearts);
+      document.getElementById('endHeartsVisual').textContent = '❤️'.repeat(fullHearts) + '🖤'.repeat(emptyHearts);
+      document.getElementById('endLivesBonus').textContent = `${state.lives} × ${BONUS_PER_LIFE} = +${livesBonus} pt`;
+      document.getElementById('finalTotalScore').textContent = `${totalScore} pt`;
+
+      const saveStatus = document.getElementById('saveStatus');
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (!completedAll) {
+        saveStatus.textContent = '⚠️ Partita non completata: completa tutte e 12 le domande per registrare il risultato.';
+        return;
+      }
+
+      saveStatus.textContent = 'Salvataggio dei risultati…';
+      try {
+        const response = await fetch(API + '/api/games/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            durationSeconds: duration,
+            correctAnswers: state.correctAnswers,
+            totalQuestions: TOTAL_QUESTIONS,
+            score: totalScore
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Salvataggio non riuscito.');
+        saveStatus.textContent = '✅ Risultato salvato correttamente nella piattaforma.';
+      } catch (error) {
+        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.';
+        console.error('Errore salvataggio fasore_sniper:', error);
+      }
+    }
+
+    async function initPlatformSession() {
+      setTheme('cyber');
+      const startBtn = document.getElementById('startBtn');
+      const banner = document.getElementById('studentBanner');
+
+      if (!token || !API) {
+        banner.textContent = 'Accesso non disponibile';
+        document.getElementById('welcomeHeading').textContent = 'Torna alla pagina di accesso';
+        startBtn.disabled = true;
+        return;
+      }
+
+      try {
+        const response = await fetch(API + '/api/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error('Sessione non valida.');
+        studentName = data.student || 'Studente';
+        banner.textContent = `👤 ${studentName}`;
+        document.getElementById('welcomeHeading').textContent = `Benvenuto ${studentName}!`;
+      } catch (error) {
+        sessionStorage.removeItem('studentGameToken');
+        location.replace('../index.html');
+      }
+    }
+
+    window.onload = initPlatformSession;
+  </script>
+</body>
+</html>

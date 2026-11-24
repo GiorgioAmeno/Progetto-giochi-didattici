@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Triangolo delle Impedenze — L'Anello Mancante</title>
+  <!-- Configurazione API della piattaforma -->
+  <script src="../config.js"></script>
+  <!-- Tailwind CSS per layout e utilità responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Google: Inter, JetBrains Mono, Press Start 2P -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      transition: background 0.4s ease, color 0.3s ease;
+    }
+
+    /* =====================================================================
+       TEMA 1: CYBERPUNK NEON
+       ===================================================================== */
+    body.theme-cyber {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #070913;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(255, 0, 170, 0.12) 0%, transparent 45%),
+        linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+      color: #e2f1f8;
+    }
+
+    .theme-cyber .panel-box {
+      background: rgba(12, 18, 34, 0.92);
+      border: 1.5px solid #00f3ff;
+      box-shadow: 0 0 18px rgba(0, 243, 255, 0.18), inset 0 0 12px rgba(0, 243, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .theme-cyber .visitor-box {
+      border-color: #ff00aa;
+      box-shadow: 0 0 18px rgba(255, 0, 170, 0.2), inset 0 0 12px rgba(255, 0, 170, 0.06);
+    }
+
+    .theme-cyber .branch-btn {
+      background: rgba(16, 26, 48, 0.95);
+      border: 1.5px solid rgba(0, 243, 255, 0.45);
+      border-radius: 8px;
+      color: #e2f1f8;
+      transition: all 0.18s ease;
+    }
+
+    .theme-cyber .branch-btn:active:not(:disabled) {
+      transform: scale(0.98);
+      border-color: #ff00aa;
+      box-shadow: 0 0 15px rgba(255, 0, 170, 0.5);
+    }
+
+    .theme-cyber .accent-title {
+      color: #00f3ff;
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    }
+
+    .theme-cyber .badge-pill {
+      background: rgba(0, 243, 255, 0.12);
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+      border-radius: 6px;
+    }
+
+    /* =====================================================================
+       TEMA 2: RETRO ARCADE 8-BIT
+       ===================================================================== */
+    body.theme-arcade {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #1a103c;
+      background-image: radial-gradient(#2c1b63 2px, transparent 2px);
+      background-size: 20px 20px;
+      color: #fff8e7;
+    }
+
+    .theme-arcade .arcade-font {
+      font-family: 'Press Start 2P', cursive;
+      letter-spacing: -0.5px;
+    }
+
+    .theme-arcade .panel-box {
+      background: #241654;
+      border: 4px solid #ffcc00;
+      box-shadow: 5px 5px 0px #0d0722;
+      border-radius: 4px;
+    }
+
+    .theme-arcade .visitor-box {
+      border-color: #ff4d6d;
+      box-shadow: 5px 5px 0px #0d0722;
+    }
+
+    .theme-arcade .branch-btn {
+      background: #311f73;
+      border: 3px solid #4cc9f0;
+      box-shadow: 4px 4px 0px #0d0722;
+      border-radius: 4px;
+      color: #ffffff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .theme-arcade .branch-btn:active:not(:disabled) {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px #0d0722;
+      border-color: #ffcc00;
+    }
+
+    .theme-arcade .accent-title {
+      color: #ffcc00;
+      text-shadow: 3px 3px 0px #d90429;
+    }
+
+    .theme-arcade .badge-pill {
+      background: #d90429;
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      border-radius: 2px;
+    }
+
+    /* =====================================================================
+       TEMA 3: MODERN GLASSMORPHISM
+       ===================================================================== */
+    body.theme-glass {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 38%, #311042 75%, #0f172a 100%);
+      background-attachment: fixed;
+      color: #f8fafc;
+    }
+
+    .theme-glass .code-font {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .theme-glass .panel-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+    }
+
+    .theme-glass .visitor-box {
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.14), rgba(168, 85, 247, 0.14));
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .theme-glass .branch-btn {
+      background: rgba(255, 255, 255, 0.09);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      color: #f8fafc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .theme-glass .branch-btn:active:not(:disabled) {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: #38bdf8;
+    }
+
+    .theme-glass .accent-title {
+      background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .theme-glass .badge-pill {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      border-radius: 9999px;
+    }
+
+    .branch-correct {
+      background: rgba(16, 185, 129, 0.28) !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.45) !important;
+    }
+
+    .branch-wrong {
+      background: rgba(239, 68, 68, 0.28) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.45) !important;
+      animation: shake 0.35s ease-in-out;
+    }
+
+    .branch-dimmed {
+      opacity: 0.45;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .animate-pop {
+      animation: popIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .theme-pill-active {
+      outline: 2px solid #ffffff;
+      transform: scale(1.04);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body class="theme-cyber flex flex-col items-center justify-start px-3 py-3 sm:py-6">
+
+  <!-- CONTENITORE PRINCIPALE MOBILE-FIRST -->
+  <main class="w-full max-w-md flex flex-col gap-3 pb-8">
+
+    <!-- BARRA SUPERIORE PIATTAFORMA -->
+    <nav class="flex items-center justify-between gap-2 px-1 text-xs">
+      <a href="../index.html"
+         class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 font-bold transition">
+        ← Esci
+      </a>
+      <span id="studentBanner" class="opacity-85 font-semibold truncate">
+        Verifica sessione…
+      </span>
+    </nav>
+
+    <!-- HEADER + SELETTORE 3 TEMI GRAFICI -->
+    <header class="panel-box p-3 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h1 id="mainTitle" class="text-base sm:text-lg font-extrabold tracking-tight accent-title">
+            TRIANGOLO IMPEDENZE
+          </h1>
+          <p class="text-[11px] opacity-75">Trova il lato o l'angolo mancante (R, X, |Z|, φ)</p>
+        </div>
+        <button id="timerToggleBtn" onclick="toggleTimerMode()" 
+                class="badge-pill px-2.5 py-1.5 text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+          <span id="timerIcon">⏱️</span>
+          <span id="timerLabel">Timer: OFF</span>
+        </button>
+      </div>
+
+      <!-- Barra Switch 3 Versioni Grafiche -->
+      <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-white/10" role="group" aria-label="Scegli tema grafico">
+        <button onclick="setTheme('cyber')" id="btn-theme-cyber"
+                class="theme-pill-active py-1.5 px-2 rounded-lg text-[11px] font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-400/50 transition">
+          ⚡ Cyber Neon
+        </button>
+        <button onclick="setTheme('arcade')" id="btn-theme-arcade"
+                class="py-1.5 px-2 rounded-lg text-[11px] font-bold bg-purple-950/90 text-yellow-300 border border-yellow-400/50 transition">
+          🕹️ 8-Bit Arcade
+        </button>
+        <button onclick="setTheme('glass')" id="btn-theme-glass"
+                class="py-1.5 px-2 rounded-lg text-[11px] font-bold bg-indigo-900/70 text-pink-200 border border-pink-300/40 transition">
+          💎 Glass UI
+        </button>
+      </div>
+    </header>
+
+    <!-- BARRA STATISTICHE -->
+    <section id="hudSection" class="hidden panel-box px-3 py-2 flex items-center justify-between text-xs sm:text-sm">
+      <div class="flex items-center gap-1" aria-label="Vite rimaste">
+        <span id="livesDisplay" class="tracking-widest text-sm">❤️❤️❤️</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span id="progressBadge" class="badge-pill px-2 py-0.5 text-[11px] font-bold">
+          Lv.1/3 • 1/12
+        </span>
+      </div>
+      <div class="flex items-center gap-2 font-bold">
+        <span class="text-sky-300 text-xs" id="elapsedDisplay">00:00</span>
+        <span class="text-emerald-400">PT: <span id="scoreDisplay">0</span></span>
+      </div>
+    </section>
+
+    <!-- BARRA TIMER RISPOSTA -->
+    <div id="timerBarContainer" class="hidden w-full h-2.5 rounded-full bg-black/40 overflow-hidden border border-white/15">
+      <div id="timerBarFill" class="h-full bg-gradient-to-r from-emerald-400 via-yellow-400 to-rose-500 transition-all duration-100" style="width: 100%;"></div>
+    </div>
+
+    <!-- =====================================================================
+         SCHERMATA INIZIALE
+         ===================================================================== -->
+    <section id="startScreen" class="panel-box p-4 flex flex-col gap-3.5 animate-pop">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl bg-black/35 p-2.5 rounded-xl border border-white/15">📐</div>
+        <div>
+          <span class="badge-pill px-2 py-0.5 text-[10px] font-bold uppercase">Numeri Complessi AC</span>
+          <h2 id="welcomeHeading" class="font-extrabold text-base sm:text-lg mt-0.5 leading-tight">L'Anello Mancante!</h2>
+        </div>
+      </div>
+
+      <p class="text-xs sm:text-sm opacity-90 leading-relaxed">
+        Resistenza <strong>R</strong>, Reattanza <strong>X</strong> e Impedenza <strong>|Z|</strong> formano un <strong>triangolo rettangolo</strong> nel piano complesso! Completa il parametro mancante senza calcolatrice sfruttando terne pitagoriche e angoli notevoli.
+      </p>
+
+      <!-- Regola d'oro -->
+      <div class="bg-black/45 rounded-xl p-3 border border-white/10 space-y-1.5">
+        <div class="text-xs font-extrabold text-amber-300 flex items-center gap-1.5">
+          <span>⚡</span>
+          <span>FORMULE DEL TRIANGOLO RETTANGOLO</span>
+        </div>
+        <p class="text-xs opacity-85 leading-relaxed code-font">
+          • |Z| = √(R² + X²) &nbsp;&nbsp;|&nbsp;&nbsp; X = X_L − X_C<br>
+          • R = |Z|·cos(φ) &nbsp;&nbsp;|&nbsp;&nbsp; X = |Z|·sin(φ)<br>
+          • Z = R + jX = |Z|∠φ
+        </p>
+      </div>
+
+      <!-- Promemoria Angoli Notevoli -->
+      <div class="bg-black/45 rounded-xl p-3 border border-white/10">
+        <div class="text-xs font-extrabold text-cyan-300 mb-2">📏 Terne & Angoli Notevoli (Zero Calcolatrice)</div>
+        <div class="grid grid-cols-2 gap-1.5 text-[11px] code-font">
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-emerald-400 font-bold">Terne:</span> 3-4-5, 6-8-10, 5-12-13
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-amber-400 font-bold">φ = ±45°:</span> |X| = R, |Z| = R√2
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-pink-400 font-bold">cos(60°) = 0.5</span> | sin(30°) = 0.5
+          </div>
+          <div class="bg-white/5 px-2 py-1.5 rounded border border-white/5">
+            <span class="text-sky-400 font-bold">cos(30°) ≈ 0.866</span> (√3/2)
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/5 rounded-xl p-2.5 border border-white/10 text-xs flex items-center justify-between">
+        <div>
+          <div class="font-bold">🎯 Sfida Standard: 12 Domande</div>
+          <div class="text-[11px] opacity-75">3 Livelli (4 dom. ciascuno) • +300 pt per vita rimasta</div>
+        </div>
+        <span class="text-lg">❤️❤️❤️</span>
+      </div>
+
+      <button id="startBtn" onclick="startGame()"
+              class="w-full py-3.5 rounded-xl font-extrabold text-sm sm:text-base uppercase tracking-wider bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-slate-950 shadow-lg active:scale-98 transition">
+        🚀 Inizia Sfida (12 Domande)
+      </button>
+    </section>
+
+    <!-- =====================================================================
+         SCHERMATA DI GIOCO PRINCIPALE
+         ===================================================================== -->
+    <div id="gameScreen" class="hidden flex flex-col gap-3">
+
+      <!-- 1. TRIANGOLO DELLE IMPEDENZE SVG + DATI -->
+      <section class="panel-box visitor-box p-3.5 animate-pop" id="visitorCard">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span id="visitorAvatar" class="text-2xl bg-black/30 p-1.5 rounded-lg border border-white/10">📐</span>
+            <div>
+              <span class="text-[10px] uppercase tracking-wider opacity-70 block">Domanda <span id="roundNumber">1</span> di 12</span>
+              <h2 id="visitorName" class="font-bold text-sm sm:text-base leading-tight">Terna Pitagorica Base</h2>
+            </div>
+          </div>
+          <span id="difficultyTag" class="badge-pill px-2 py-0.5 text-[10px] font-bold uppercase">
+            Livello 1/3
+          </span>
+        </div>
+
+        <!-- Triangolo SVG Dinamico -->
+        <div class="bg-black/60 rounded-xl p-2 border border-white/10 flex flex-col items-center justify-center mb-2.5">
+          <svg id="triangleSvg" viewBox="0 0 270 145" class="w-full max-w-[270px] h-auto select-none" aria-label="Triangolo delle impedenze"></svg>
+        </div>
+
+        <!-- Dati noti -->
+        <div class="bg-black/55 rounded-lg p-2.5 border border-white/10 code-font text-xs sm:text-sm leading-relaxed">
+          <div id="variablesContainer" class="space-y-1"></div>
+        </div>
+      </section>
+
+      <!-- 2. OPZIONI DI RISPOSTA -->
+      <section class="panel-box p-3.5 flex flex-col gap-2.5" id="codeSection">
+        <div class="flex items-center justify-between">
+          <span id="questionPrompt" class="text-xs font-bold uppercase tracking-wider opacity-85">
+            👇 Seleziona il valore corretto:
+          </span>
+        </div>
+
+        <div id="branchesContainer" class="grid grid-cols-1 gap-2"></div>
+      </section>
+
+      <!-- 3. PANNELLO SPIEGAZIONE DIDATTICA -->
+      <section id="feedbackPanel" class="hidden panel-box p-3.5 animate-pop border-2">
+        <div class="flex items-start gap-2.5">
+          <span id="feedbackIcon" class="text-2xl leading-none mt-0.5">✅</span>
+          <div class="flex-1 min-w-0">
+            <h3 id="feedbackTitle" class="font-extrabold text-sm sm:text-base">Esatto!</h3>
+            <p id="feedbackExplanation" class="text-xs sm:text-sm opacity-90 mt-1 leading-relaxed"></p>
+          </div>
+        </div>
+        <button id="nextBtn" onclick="nextRound()"
+                class="mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg active:scale-98 transition">
+          Prossima Domanda ➜
+        </button>
+      </section>
+
+    </div>
+
+    <!-- =====================================================================
+         SCHERMATA FINE PARTITA
+         ===================================================================== -->
+    <section id="gameOverScreen" class="hidden panel-box p-5 text-center flex flex-col items-center gap-3 animate-pop">
+      <div id="endIcon" class="text-4xl">🏆</div>
+      <h2 id="endTitle" class="text-xl font-extrabold accent-title">SFIDA COMPLETATA!</h2>
+      <p id="endSubtitle" class="text-xs sm:text-sm opacity-85">
+        Hai completato tutte le 12 domande sul triangolo delle impedenze!
+      </p>
+
+      <div class="w-full bg-black/45 rounded-xl p-3.5 border border-white/15 flex flex-col gap-2.5 text-xs sm:text-sm">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Risposte corrette:</span>
+          <span id="endQuestionsCount" class="font-bold">12 / 12</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Tempo impiegato:</span>
+          <span id="endDurationText" class="font-bold text-sky-300">00:00</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80">Punteggio risposte:</span>
+          <span id="finalBaseScore" class="font-extrabold text-cyan-300">0 pt</span>
+        </div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="opacity-80 text-left">
+            Vite residue (<span id="endHeartsVisual">❤️❤️❤️</span>):
+          </span>
+          <span id="endLivesBonus" class="font-extrabold text-amber-300">3 × 300 = +900 pt</span>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <span class="font-extrabold text-sm sm:text-base uppercase tracking-wide">Punteggio Totale:</span>
+          <span id="finalTotalScore" class="text-2xl font-extrabold text-emerald-400">0 pt</span>
+        </div>
+      </div>
+
+      <p id="saveStatus" class="text-xs font-bold px-3 py-2 rounded-lg bg-white/5 border border-white/10 w-full">
+        In attesa…
+      </p>
+
+      <div class="w-full flex flex-col gap-2 mt-1">
+        <button onclick="startGame()"
+                class="w-full py-3.5 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-400 hover:bg-emerald-300 text-slate-950 shadow-lg active:scale-98 transition">
+          🔄 Rigioca (Nuove 12 Domande)
+        </button>
+        <button onclick="backToStartScreen()"
+                class="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-white/10 hover:bg-white/15 border border-white/15 transition">
+          📖 Torna alla Guida Iniziale
+        </button>
+        <a href="../index.html"
+           class="w-full py-2 text-xs opacity-75 hover:opacity-100 underline transition">
+          Torna alla pagina di accesso
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const API = window.APP_CONFIG?.API_BASE?.replace(/\/$/, "");
+    const token = sessionStorage.getItem("studentGameToken");
+    let studentName = "Studente";
+
+    const TOTAL_QUESTIONS = 12;
+    const QUESTIONS_PER_LEVEL = 4;
+    const POINTS_PER_CORRECT = 100;
+    const BONUS_PER_LIFE = 300;
+
+    const state = {
+      theme: 'cyber',
+      isPlaying: false,
+      baseScore: 0,
+      lives: 3,
+      round: 1,
+      correctAnswers: 0,
+      deck: [],
+      timerEnabled: false,
+      timerSeconds: 20,
+      timerRemaining: 20,
+      timerInterval: null,
+      startedAt: 0,
+      elapsedInterval: null,
+      answered: false,
+      currentChallenge: null
+    };
+
+    const formatTime = seconds =>
+      String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0");
+
+    const elapsedSeconds = () => Math.max(0, Math.floor((Date.now() - state.startedAt) / 1000));
+
+    function setTheme(themeName) {
+      state.theme = themeName;
+      document.body.className = `theme-${themeName} flex flex-col items-center justify-start px-3 py-3 sm:py-6`;
+
+      ['cyber', 'arcade', 'glass'].forEach(t => {
+        const btn = document.getElementById(`btn-theme-${t}`);
+        if (t === themeName) btn.classList.add('theme-pill-active');
+        else btn.classList.remove('theme-pill-active');
+      });
+
+      const mainTitle = document.getElementById('mainTitle');
+      if (themeName === 'arcade') {
+        mainTitle.classList.add('arcade-font', 'text-xs', 'sm:text-sm');
+        mainTitle.classList.remove('text-base', 'sm:text-lg');
+      } else {
+        mainTitle.classList.remove('arcade-font', 'text-xs', 'sm:text-sm');
+        mainTitle.classList.add('text-base', 'sm:text-lg');
+      }
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    /**
+     * Disegna il triangolo delle impedenze (orientato in alto se induttivo, in basso se capacitivo)
+     */
+    function renderTriangleSVG({ inductive = true, labelR = 'R', labelX = 'X', labelZ = '|Z|', labelPhi = 'φ', highlight = 'Z' }) {
+      const svg = document.getElementById('triangleSvg');
+      const colorR = highlight === 'R' ? '#fbbf24' : '#34d399';
+      const colorX = highlight === 'X' ? '#fbbf24' : (inductive ? '#38bdf8' : '#f472b6');
+      const colorZ = highlight === 'Z' ? '#fbbf24' : '#c084fc';
+      const colorPhi = highlight === 'PHI' ? '#fbbf24' : '#e2e8f0';
+
+      if (inductive) {
+        // Triangolo nel 1° quadrante (X verso l'alto)
+        svg.innerHTML = `
+          <!-- R (base orizzontale) -->
+          <line x1="45" y1="115" x2="195" y2="115" stroke="${colorR}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- X_L (cateto verticale verso l'alto) -->
+          <line x1="195" y1="115" x2="195" y2="28" stroke="${colorX}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- |Z| (ipotenusa) -->
+          <line x1="45" y1="115" x2="195" y2="28" stroke="${colorZ}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Angolo retto -->
+          <polyline points="183,115 183,103 195,103" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+          <!-- Arco angolo phi -->
+          <path d="M 78 115 A 33 33 0 0 0 73 98" fill="none" stroke="${colorPhi}" stroke-width="2"/>
+          <!-- Etichette -->
+          <text x="120" y="133" fill="${colorR}" font-size="11.5" font-weight="bold" text-anchor="middle">${labelR}</text>
+          <text x="204" y="74" fill="${colorX}" font-size="11.5" font-weight="bold" text-anchor="start">${labelX}</text>
+          <text x="108" y="62" fill="${colorZ}" font-size="11.5" font-weight="bold" text-anchor="end">${labelZ}</text>
+          <text x="84" y="109" fill="${colorPhi}" font-size="11" font-weight="bold">${labelPhi}</text>
+        `;
+      } else {
+        // Triangolo nel 4° quadrante (X verso il basso)
+        svg.innerHTML = `
+          <!-- R (base orizzontale in alto) -->
+          <line x1="45" y1="30" x2="195" y2="30" stroke="${colorR}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- X_C (cateto verticale verso il basso) -->
+          <line x1="195" y1="30" x2="195" y2="117" stroke="${colorX}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- |Z| (ipotenusa) -->
+          <line x1="45" y1="30" x2="195" y2="117" stroke="${colorZ}" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Angolo retto -->
+          <polyline points="183,30 183,42 195,42" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+          <!-- Arco angolo phi -->
+          <path d="M 78 30 A 33 33 0 0 1 73 47" fill="none" stroke="${colorPhi}" stroke-width="2"/>
+          <!-- Etichette -->
+          <text x="120" y="19" fill="${colorR}" font-size="11.5" font-weight="bold" text-anchor="middle">${labelR}</text>
+          <text x="204" y="76" fill="${colorX}" font-size="11.5" font-weight="bold" text-anchor="start">${labelX}</text>
+          <text x="108" y="88" fill="${colorZ}" font-size="11.5" font-weight="bold" text-anchor="end">${labelZ}</text>
+          <text x="84" y="45" fill="${colorPhi}" font-size="11" font-weight="bold">${labelPhi}</text>
+        `;
+      }
+    }
+
+    function buildStandardDeck() {
+      // LIVELLO 1: Calcolo di |Z|, R o X usando terne pitagoriche (3-4-5, 6-8-10, 5-12-13, 8-15-17)
+      const level1Pool = [
+        () => {
+          const [r, x, z] = pickRandom([[3, 4, 5], [6, 8, 10], [5, 12, 13], [9, 12, 15]]);
+          return makeChallenge('📐', 'Modulo Impedenza RL', 1,
+            { inductive: true, labelR: `R = ${r} Ω`, labelX: `X_L = ${x} Ω`, labelZ: '|Z| = ?', labelPhi: 'φ', highlight: 'Z' },
+            [
+              `Resistenza: <span class="text-emerald-300 font-bold">R = ${r} Ω</span>`,
+              `Reattanza induttiva: <span class="text-sky-300 font-bold">X_L = ${x} Ω</span>`
+            ],
+            'Calcola il modulo dell'impedenza |Z|:',
+            [
+              { label: `|Z| = ${z} Ω`, icon: '🎯', correct: true },
+              { label: `|Z| = ${r + x} Ω`, icon: '➕', correct: false },
+              { label: `|Z| = ${Math.abs(x - r)} Ω`, icon: '➖', correct: false },
+              { label: `|Z| = ${z * 2} Ω`, icon: '✖️', correct: false }
+            ],
+            `Applicando il teorema di Pitagora: |Z| = √(R² + X_L²) = √(${r}² + ${x}²) = √(${r*r + x*x}) = ${z} Ω (terna pitagorica!).`
+          );
+        },
+        () => {
+          const [r, x, z] = pickRandom([[4, 3, 5], [8, 6, 10], [12, 5, 13]]);
+          return makeChallenge('🔋', 'Modulo Impedenza RC', 1,
+            { inductive: false, labelR: `R = ${r} Ω`, labelX: `X_C = ${x} Ω`, labelZ: '|Z| = ?', labelPhi: 'φ', highlight: 'Z' },
+            [
+              `Impedenza: <span class="text-pink-300 font-bold">Z = ${r} - j${x} Ω</span>`,
+              `R = ${r} Ω, X_C = ${x} Ω`
+            ],
+            'Calcola il modulo dell'impedenza |Z|:',
+            [
+              { label: `|Z| = ${z} Ω`, icon: '🎯', correct: true },
+              { label: `|Z| = ${r - x} Ω`, icon: '➖', correct: false },
+              { label: `|Z| = ${r + x} Ω`, icon: '➕', correct: false },
+              { label: `|Z| = -${z} Ω`, icon: '⚠️', correct: false }
+            ],
+            `Il modulo è sempre positivo: |Z| = √(R² + (-X_C)²) = √(${r}² + ${x}²) = ${z} Ω.`
+          );
+        },
+        () => {
+          const [r, x, z] = pickRandom([[3, 4, 5], [6, 8, 10], [5, 12, 13]]);
+          return makeChallenge('🔍', 'Cateto Reattivo Mancante', 1,
+            { inductive: true, labelR: `R = ${r} Ω`, labelX: 'X_L = ?', labelZ: `|Z| = ${z} Ω`, labelPhi: 'φ', highlight: 'X' },
+            [
+              `Modulo impedenza: <span class="text-purple-300 font-bold">|Z| = ${z} Ω</span>`,
+              `Resistenza serie: <span class="text-emerald-300 font-bold">R = ${r} Ω</span>`
+            ],
+            'Quanto vale la reattanza induttiva X_L?',
+            [
+              { label: `X_L = ${x} Ω`, icon: '🎯', correct: true },
+              { label: `X_L = ${z - r} Ω`, icon: '➖', correct: false },
+              { label: `X_L = ${z + r} Ω`, icon: '➕', correct: false },
+              { label: `X_L = ${r} Ω`, icon: '⚖️', correct: false }
+            ],
+            `Invertendo Pitagora: X_L = √(|Z|² − R²) = √(${z}² − ${r}²) = √(${z*z - r*r}) = ${x} Ω.`
+          );
+        },
+        () => {
+          const r = pickRandom([6, 8, 10]);
+          const xl = pickRandom([10, 14, 18]);
+          const xc = xl - r; // così X_tot = r e |Z| = r*sqrt(2)
+          return makeChallenge('⚖️', 'Reattanza Netta RLC', 1,
+            { inductive: true, labelR: `R = ${r} Ω`, labelX: 'X_tot = ?', labelZ: '|Z|', labelPhi: '45°', highlight: 'X' },
+            [
+              `Resistenza: <span class="text-emerald-300 font-bold">R = ${r} Ω</span>`,
+              `Reattanze: <span class="text-sky-300 font-bold">X_L = ${xl} Ω</span>, <span class="text-pink-300 font-bold">X_C = ${xc} Ω</span>`
+            ],
+            'Quanto vale la reattanza equivalente X = X_L − X_C?',
+            [
+              { label: `X = +${r} Ω (induttiva)`, icon: '🎯', correct: true },
+              { label: `X = +${xl + xc} Ω`, icon: '➕', correct: false },
+              { label: `X = -${r} Ω (capacitiva)`, icon: '🔄', correct: false },
+              { label: `X = 0 Ω`, icon: '0️⃣', correct: false }
+            ],
+            `In serie le reattanze si sottraggono: X = X_L − X_C = ${xl} − ${xc} = +${r} Ω. Poiché X > 0, il triangolo punta verso l'alto (induttivo).`
+          );
+        }
+      ];
+
+      // LIVELLO 2: Passaggio da Polare (|Z|∠φ) a Cartesiana (R + jX) con angoli 30°, 45°, 60°
+      const level2Pool = [
+        () => {
+          const z = pickRandom([10, 20, 40, 100]);
+          const r = z / 2;
+          return makeChallenge('🧭', 'Proiezione con φ = +60°', 2,
+            { inductive: true, labelR: 'R = ?', labelX: 'X_L', labelZ: `|Z| = ${z} Ω`, labelPhi: '+60°', highlight: 'R' },
+            [
+              `Impedenza polare: <span class="text-purple-300 font-bold">Z = ${z}∠+60° Ω</span>`,
+              `Ricorda: cos(60°) = 0.5`
+            ],
+            'Quanto vale la parte reale (Resistenza R)?',
+            [
+              { label: `R = ${r} Ω`, icon: '🎯', correct: true },
+              { label: `R = ${z} Ω`, icon: '⚠️', correct: false },
+              { label: `R = ${(z * 0.866).toFixed(1)} Ω`, icon: '📐', correct: false },
+              { label: `R = ${z * 2} Ω`, icon: '✖️', correct: false }
+            ],
+            `R = |Z| · cos(φ) = ${z} · cos(60°) = ${z} · 0.5 = ${r} Ω.`
+          );
+        },
+        () => {
+          const z = pickRandom([10, 20, 30, 50]);
+          const x = z / 2;
+          return makeChallenge('📉', 'Proiezione con φ = -30°', 2,
+            { inductive: false, labelR: 'R', labelX: 'X = ?', labelZ: `|Z| = ${z} Ω`, labelPhi: '-30°', highlight: 'X' },
+            [
+              `Impedenza polare: <span class="text-pink-300 font-bold">Z = ${z}∠-30° Ω</span>`,
+              `Ricorda: sin(-30°) = -0.5`
+            ],
+            'Quanto vale la parte immaginaria X dell'impedenza?',
+            [
+              { label: `X = -${x} Ω (capacitiva)`, icon: '🎯', correct: true },
+              { label: `X = +${x} Ω (induttiva)`, icon: '🔄', correct: false },
+              { label: `X = -${z} Ω`, icon: '⚠️', correct: false },
+              { label: `X = 0 Ω`, icon: '0️⃣', correct: false }
+            ],
+            `X = |Z| · sin(φ) = ${z} · sin(-30°) = ${z} · (-0.5) = -${x} Ω (cioè -j${x} Ω).`
+          );
+        },
+        () => {
+          const r = pickRandom([5, 10, 15, 25]);
+          return makeChallenge('💎', 'Triangolo Isoscele (φ = +45°)', 2,
+            { inductive: true, labelR: `R = ${r} Ω`, labelX: `X_L = ${r} Ω`, labelZ: '|Z| = ?', labelPhi: 'φ = ?', highlight: 'Z' },
+            [
+              `Impedenza cartesiana: <span class="text-amber-300 font-bold">Z = ${r} + j${r} Ω</span>`
+            ],
+            'Qual è l'equivalente forma polare Z = |Z|∠φ?',
+            [
+              { label: `Z = ${r}√2 ∠ +45° Ω`, icon: '🎯', correct: true },
+              { label: `Z = ${r * 2} ∠ +45° Ω`, icon: '⚠️', correct: false },
+              { label: `Z = ${r}√2 ∠ -45° Ω`, icon: '🔄', correct: false },
+              { label: `Z = ${r} ∠ +90° Ω`, icon: '⬆️', correct: false }
+            ],
+            `Quando R = X_L = ${r} Ω, i due cateti sono uguali: l'angolo è arctan(1) = +45° e l'ipotenusa vale √(R² + R²) = ${r}√2 Ω.`
+          );
+        },
+        () => {
+          const z = pickRandom([20, 40, 60]);
+          const half = z / 2;
+          return makeChallenge('🔄', 'Da Polare a Rettangolare', 2,
+            { inductive: true, labelR: 'R = ?', labelX: 'X_L = ?', labelZ: `|Z| = ${z} Ω`, labelPhi: '+30°', highlight: 'R' },
+            [
+              `Impedenza: <span class="text-sky-300 font-bold">Z = ${z}∠+30° Ω</span>`,
+              `sin(30°) = 0.5 , cos(30°) = √3 / 2`
+            ],
+            'Scrivi Z in forma cartesiana R + jX:',
+            [
+              { label: `Z = ${half}√3 + j${half} Ω`, icon: '🎯', correct: true },
+              { label: `Z = ${half} + j${half}√3 Ω`, icon: '🔄', correct: false },
+              { label: `Z = ${half}√3 - j${half} Ω`, icon: '➖', correct: false },
+              { label: `Z = ${half} + j${half} Ω`, icon: '⚠️', correct: false }
+            ],
+            `R = ${z}·cos(30°) = ${half}√3 Ω; X_L = ${z}·sin(30°) = ${z}·0.5 = +${half} Ω. Quindi Z = ${half}√3 + j${half} Ω.`
+          );
+        }
+      ];
+
+      // LIVELLO 3: Fattore di potenza cos(φ), passaggio Cartesiana -> Polare completo e doppia reattanza
+      const level3Pool = [
+        () => {
+          const [r, x, z, cosphi] = pickRandom([
+            [3, 4, 5, '0.60'],
+            [4, 3, 5, '0.80'],
+            [6, 8, 10, '0.60'],
+            [8, 6, 10, '0.80']
+          ]);
+          return makeChallenge('⚡', 'Fattore di Potenza dal Triangolo', 3,
+            { inductive: true, labelR: `R = ${r} Ω`, labelX: `X_L = ${x} Ω`, labelZ: `|Z| = ${z} Ω`, labelPhi: 'φ', highlight: 'PHI' },
+            [
+              `Impedenza serie: <span class="text-amber-300 font-bold">Z = ${r} + j${x} Ω</span>`
+            ],
+            'Quanto vale il fattore di potenza cos(φ) del carico?',
+            [
+              { label: `cos(φ) = ${cosphi} (induttivo)`, icon: '🎯', correct: true },
+              { label: `cos(φ) = ${(x / z).toFixed(2)} (induttivo)`, icon: '🔄', correct: false },
+              { label: `cos(φ) = ${(r / x).toFixed(2)}`, icon: '⚠️', correct: false },
+              { label: `cos(φ) = 1.00`, icon: '1️⃣', correct: false }
+            ],
+            `Dal triangolo delle impedenze: |Z| = √(${r}² + ${x}²) = ${z} Ω. Il fattore di potenza è il rapporto cateto adiacente su ipotenusa: cos(φ) = R / |Z| = ${r} / ${z} = ${cosphi}.`
+          );
+        },
+        () => {
+          const r = pickRandom([4, 6, 8]);
+          const xl = pickRandom([10, 12, 15]);
+          const xc = xl + r; // così X_tot = -r!
+          return makeChallenge('🎯', 'RLC Serie con X_C > X_L', 3,
+            { inductive: false, labelR: `R = ${r} Ω`, labelX: 'X_tot', labelZ: '|Z| = ?', labelPhi: 'φ = ?', highlight: 'PHI' },
+            [
+              `Componenti: <span class="text-emerald-300 font-bold">R = ${r} Ω</span>, <span class="text-sky-300 font-bold">X_L = ${xl} Ω</span>, <span class="text-pink-300 font-bold">X_C = ${xc} Ω</span>`
+            ],
+            'Qual è l'angolo di fase φ dell'impedenza totale?',
+            [
+              { label: `φ = -45° (prevalenza capacitiva)`, icon: '🎯', correct: true },
+              { label: `φ = +45° (prevalenza induttiva)`, icon: '🔄', correct: false },
+              { label: `φ = -90°`, icon: '⬇️', correct: false },
+              { label: `φ = 0°`, icon: '➡️', correct: false }
+            ],
+            `X = X_L − X_C = ${xl} − ${xc} = -${r} Ω. Poiché X = -R, il triangolo è isoscele nel 4° quadrante e φ = -45°.`
+          );
+        },
+        () => {
+          const [r, x, z] = pickRandom([[5, 12, 13], [8, 15, 17]]);
+          return makeChallenge('🚀', 'Sintesi Polare Capacitiva', 3,
+            { inductive: false, labelR: `R = ${r} Ω`, labelX: `X_C = ${x} Ω`, labelZ: '|Z| = ?', labelPhi: 'φ < 0', highlight: 'Z' },
+            [
+              `Impedenza: <span class="text-pink-300 font-bold">Z = ${r} - j${x} Ω</span>`
+            ],
+            'Quale espressione polare rappresenta correttamente Z?',
+            [
+              { label: `Z = ${z}∠-67.4° Ω`, icon: '🎯', correct: true },
+              { label: `Z = ${z}∠+67.4° Ω`, icon: '🔄', correct: false },
+              { label: `Z = ${r + x}∠-67.4° Ω`, icon: '➕', correct: false },
+              { label: `Z = ${z}∠-22.6° Ω`, icon: '📐', correct: false }
+            ],
+            `|Z| = √(${r}² + ${x}²) = ${z} Ω. Essendo |X_C| > R e parte immaginaria negativa, l'angolo è negativo e maggiore di 45° in modulo: φ = -arctan(${x}/${r}) ≈ -67.4°.`
+          );
+        },
+        () => {
+          const z = pickRandom([10, 20, 30]);
+          const r = z * 0.8;
+          const x = z * 0.6;
+          return makeChallenge('🏭', 'Dimensionamento da |Z| e cos(φ)', 3,
+            { inductive: true, labelR: `R = ${r} Ω`, labelX: 'X_L = ?', labelZ: `|Z| = ${z} Ω`, labelPhi: 'cosφ=0.8', highlight: 'X' },
+            [
+              `Modulo impedenza: <span class="text-purple-300 font-bold">|Z| = ${z} Ω</span>`,
+              `Fattore di potenza: <span class="text-amber-300 font-bold">cos(φ) = 0.8</span> (induttivo)`
+            ],
+            'Calcola R e X_L del carico:',
+            [
+              { label: `R = ${r} Ω , X_L = ${x} Ω`, icon: '🎯', correct: true },
+              { label: `R = ${x} Ω , X_L = ${r} Ω`, icon: '🔄', correct: false },
+              { label: `R = ${r} Ω , X_L = ${z - r} Ω`, icon: '➖', correct: false },
+              { label: `R = ${z} Ω , X_L = ${x} Ω`, icon: '⚠️', correct: false }
+            ],
+            `R = |Z|·cos(φ) = ${z} · 0.8 = ${r} Ω. Se cos(φ) = 0.8, allora sin(φ) = √(1 − 0.8²) = 0.6, quindi X_L = ${z} · 0.6 = ${x} Ω.`
+          );
+        }
+      ];
+
+      return [
+        ...shuffleArray(level1Pool).map(fn => fn()),
+        ...shuffleArray(level2Pool).map(fn => fn()),
+        ...shuffleArray(level3Pool).map(fn => fn())
+      ];
+    }
+
+    function makeChallenge(avatar, name, level, svgSpec, dataLines, prompt, rawOptions, explanation) {
+      const options = shuffleArray(rawOptions);
+      const correctIndex = options.findIndex(o => o.correct);
+      return {
+        avatar,
+        name,
+        level,
+        svgSpec,
+        dataLines,
+        prompt,
+        options,
+        correctIndex,
+        explanationHtml: explanation
+      };
+    }
+
+    function renderChallenge() {
+      state.answered = false;
+      const challenge = state.deck[state.round - 1];
+      state.currentChallenge = challenge;
+
+      const currentLevel = Math.ceil(state.round / QUESTIONS_PER_LEVEL);
+
+      document.getElementById('roundNumber').textContent = state.round;
+      document.getElementById('visitorAvatar').textContent = challenge.avatar;
+      document.getElementById('visitorName').textContent = challenge.name;
+      document.getElementById('difficultyTag').textContent = `Livello ${currentLevel}/3`;
+      document.getElementById('progressBadge').textContent = `Lv.${currentLevel}/3 • ${state.round}/${TOTAL_QUESTIONS}`;
+      document.getElementById('questionPrompt').textContent = `👇 ${challenge.prompt}`;
+
+      const visitorCard = document.getElementById('visitorCard');
+      visitorCard.classList.remove('animate-pop');
+      void visitorCard.offsetWidth;
+      visitorCard.classList.add('animate-pop');
+
+      renderTriangleSVG(challenge.svgSpec);
+
+      document.getElementById('variablesContainer').innerHTML = challenge.dataLines
+        .map(line => `<div>${line}</div>`)
+        .join('');
+
+      const branchesContainer = document.getElementById('branchesContainer');
+      branchesContainer.innerHTML = challenge.options.map((opt, idx) => `
+        <button id="branch-btn-${idx}" onclick="handleBranchChoice(${idx})"
+                class="branch-btn w-full text-left p-3.5 flex items-center justify-between gap-2 cursor-pointer">
+          <span class="font-bold text-sm sm:text-base flex items-center gap-2.5">
+            <span class="text-lg">${opt.icon}</span>
+            <span>${opt.label}</span>
+          </span>
+          <span class="text-[10px] uppercase tracking-wider opacity-60 font-bold px-2 py-0.5 rounded bg-white/5 shrink-0">
+            Scegli
+          </span>
+        </button>
+      `).join('');
+
+      document.getElementById('feedbackPanel').classList.add('hidden');
+      resetAndStartTimer();
+    }
+
+    function handleBranchChoice(chosenIdx, isTimeout = false) {
+      if (state.answered) return;
+      state.answered = true;
+      stopTimer();
+
+      const challenge = state.currentChallenge;
+      const isCorrect = !isTimeout && (chosenIdx === challenge.correctIndex);
+
+      challenge.options.forEach((_, idx) => {
+        const btn = document.getElementById(`branch-btn-${idx}`);
+        btn.disabled = true;
+
+        if (idx === challenge.correctIndex) {
+          btn.classList.add('branch-correct');
+        } else if (idx === chosenIdx && !isCorrect) {
+          btn.classList.add('branch-wrong');
+        } else {
+          btn.classList.add('branch-dimmed');
+        }
+      });
+
+      const feedbackPanel = document.getElementById('feedbackPanel');
+      const feedbackIcon = document.getElementById('feedbackIcon');
+      const feedbackTitle = document.getElementById('feedbackTitle');
+      const feedbackExplanation = document.getElementById('feedbackExplanation');
+
+      if (isCorrect) {
+        state.correctAnswers += 1;
+        state.baseScore += POINTS_PER_CORRECT;
+
+        feedbackPanel.style.borderColor = '#10b981';
+        feedbackIcon.textContent = '✅';
+        feedbackTitle.textContent = `Triangolo Chiuso! (+${POINTS_PER_CORRECT} pt)`;
+        feedbackTitle.className = 'font-extrabold text-sm sm:text-base text-emerald-400';
+      } else {
+        state.lives = Math.max(0, state.lives - 1);
+
+        feedbackPanel.style.borderColor = '#ef4444';
+        feedbackIcon.textContent = isTimeout ? '⏰' : '❌';
+        feedbackTitle.textContent = isTimeout
+          ? 'Tempo Scaduto! (-1 Vita)'
+          : 'Calcolo Errato! (-1 Vita)';
+        feedbackTitle.className = 'font-extrabold text-sm sm:text-base text-rose-400';
+      }
+
+      feedbackExplanation.innerHTML = challenge.explanationHtml;
+      feedbackPanel.classList.remove('hidden');
+      updateHUD();
+
+      const isGameFinished = (state.lives <= 0) || (state.round >= TOTAL_QUESTIONS);
+      const nextBtn = document.getElementById('nextBtn');
+
+      if (isGameFinished) {
+        nextBtn.textContent = 'Vedi Riepilogo e Salva Risultato ➜';
+        nextBtn.className = state.lives > 0
+          ? 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg active:scale-98 transition'
+          : 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-rose-500 text-white shadow-lg active:scale-98 transition';
+      } else {
+        const nextLevel = Math.ceil((state.round + 1) / QUESTIONS_PER_LEVEL);
+        const currentLevel = Math.ceil(state.round / QUESTIONS_PER_LEVEL);
+        nextBtn.textContent = (nextLevel > currentLevel)
+          ? `Avanza al Livello ${nextLevel}/3 ➜`
+          : `Prossima Domanda (${state.round + 1}/${TOTAL_QUESTIONS}) ➜`;
+        nextBtn.className = 'mt-3 w-full py-3 rounded-xl font-extrabold text-sm uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg active:scale-98 transition';
+      }
+
+      setTimeout(() => {
+        feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
+
+    function nextRound() {
+      if (state.lives <= 0 || state.round >= TOTAL_QUESTIONS) {
+        showEndScreen();
+        return;
+      }
+      state.round += 1;
+      renderChallenge();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateHUD() {
+      const fullHearts = Math.max(0, state.lives);
+      const emptyHearts = Math.max(0, 3 - fullHearts);
+      document.getElementById('livesDisplay').textContent = '❤️'.repeat(fullHearts) + '🖤'.repeat(emptyHearts);
+      document.getElementById('scoreDisplay').textContent = state.baseScore;
+    }
+
+    function toggleTimerMode() {
+      state.timerEnabled = !state.timerEnabled;
+      const label = document.getElementById('timerLabel');
+      const barContainer = document.getElementById('timerBarContainer');
+
+      if (state.timerEnabled) {
+        label.textContent = 'Timer: ON';
+        if (state.isPlaying) {
+          barContainer.classList.remove('hidden');
+          if (!state.answered) resetAndStartTimer();
+        }
+      } else {
+        label.textContent = 'Timer: OFF';
+        barContainer.classList.add('hidden');
+        stopTimer();
+      }
+    }
+
+    function resetAndStartTimer() {
+      stopTimer();
+      if (!state.timerEnabled || !state.isPlaying) return;
+
+      state.timerRemaining = state.timerSeconds;
+      const fill = document.getElementById('timerBarFill');
+      fill.style.width = '100%';
+
+      state.timerInterval = setInterval(() => {
+        state.timerRemaining -= 0.1;
+        const pct = Math.max(0, (state.timerRemaining / state.timerSeconds) * 100);
+        fill.style.width = `${pct}%`;
+
+        if (state.timerRemaining <= 0) {
+          stopTimer();
+          handleBranchChoice(-1, true);
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function stopElapsedClock() {
+      if (state.elapsedInterval) {
+        clearInterval(state.elapsedInterval);
+        state.elapsedInterval = null;
+      }
+    }
+
+    function startGame() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = true;
+      state.baseScore = 0;
+      state.lives = 3;
+      state.round = 1;
+      state.correctAnswers = 0;
+      state.startedAt = Date.now();
+      state.deck = buildStandardDeck();
+
+      document.getElementById('elapsedDisplay').textContent = '00:00';
+      state.elapsedInterval = setInterval(() => {
+        document.getElementById('elapsedDisplay').textContent = formatTime(elapsedSeconds());
+      }, 500);
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('hudSection').classList.remove('hidden');
+      document.getElementById('gameScreen').classList.remove('hidden');
+
+      if (state.timerEnabled) {
+        document.getElementById('timerBarContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('timerBarContainer').classList.add('hidden');
+      }
+
+      updateHUD();
+      renderChallenge();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToStartScreen() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = false;
+      document.getElementById('hudSection').classList.add('hidden');
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('timerBarContainer').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function showEndScreen() {
+      stopTimer();
+      stopElapsedClock();
+      state.isPlaying = false;
+
+      const duration = elapsedSeconds();
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('timerBarContainer').classList.add('hidden');
+
+      const completedAll = (state.lives > 0 && state.round >= TOTAL_QUESTIONS);
+      const livesBonus = state.lives * BONUS_PER_LIFE;
+      const totalScore = state.baseScore + livesBonus;
+
+      document.getElementById('endIcon').textContent = completedAll ? '🏆' : '🚨';
+      document.getElementById('endTitle').textContent = completedAll
+        ? 'SFIDA COMPLETATA!'
+        : 'VITE ESAURITE!';
+      document.getElementById('endSubtitle').textContent = completedAll
+        ? `Ottimo lavoro ${studentName}! Hai padroneggiato il triangolo delle impedenze.`
+        : `${studentName}, hai esaurito le vite. Riprova per completare tutte le 12 domande!`;
+
+      document.getElementById('endQuestionsCount').textContent = `${state.correctAnswers} / ${TOTAL_QUESTIONS}`;
+      document.getElementById('endDurationText').textContent = formatTime(duration);
+      document.getElementById('finalBaseScore').textContent = `${state.baseScore} pt`;
+
+      const fullHearts = Math.max(0, state.lives);
+      const emptyHearts = Math.max(0, 3 - fullHearts);
+      document.getElementById('endHeartsVisual').textContent = '❤️'.repeat(fullHearts) + '🖤'.repeat(emptyHearts);
+      document.getElementById('endLivesBonus').textContent = `${state.lives} × ${BONUS_PER_LIFE} = +${livesBonus} pt`;
+      document.getElementById('finalTotalScore').textContent = `${totalScore} pt`;
+
+      const saveStatus = document.getElementById('saveStatus');
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (!completedAll) {
+        saveStatus.textContent = '⚠️ Partita non completata: completa tutte e 12 le domande per registrare il risultato.';
+        return;
+      }
+
+      saveStatus.textContent = 'Salvataggio dei risultati…';
+      try {
+        const response = await fetch(API + '/api/games/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            durationSeconds: duration,
+            correctAnswers: state.correctAnswers,
+            totalQuestions: TOTAL_QUESTIONS,
+            score: totalScore
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Salvataggio non riuscito.');
+        saveStatus.textContent = '✅ Risultato salvato correttamente nella piattaforma.';
+      } catch (error) {
+        saveStatus.textContent = '⚠️ Non è stato possibile salvare il risultato. Avvisa l'insegnante.';
+        console.error('Errore salvataggio triangolo_impedenze:', error);
+      }
+    }
+
+    async function initPlatformSession() {
+      setTheme('cyber');
+      const startBtn = document.getElementById('startBtn');
+      const banner = document.getElementById('studentBanner');
+
+      if (!token || !API) {
+        banner.textContent = 'Accesso non disponibile';
+        document.getElementById('welcomeHeading').textContent = 'Torna alla pagina di accesso';
+        startBtn.disabled = true;
+        return;
+      }
+
+      try {
+        const response = await fetch(API + '/api/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error('Sessione non valida.');
+        studentName = data.student || 'Studente';
+        banner.textContent = `👤 ${studentName}`;
+        document.getElementById('welcomeHeading').textContent = `Benvenuto ${studentName}!`;
+      } catch (error) {
+        sessionStorage.removeItem('studentGameToken');
+        location.replace('../index.html');
+      }
+    }
+
+    window.onload = initPlatformSession;
+  </script>
+</body>
+</html>
